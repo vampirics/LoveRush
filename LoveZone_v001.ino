@@ -1,6 +1,5 @@
 #include <Arduboy2.h>
 #include <ArduboyTones.h>
-#include <Sprites.h>
 
 Arduboy2 arduboy;
 ArduboyTones sound(arduboy.audio.enabled);
@@ -29,6 +28,9 @@ int hearty = -14;
 
 int score = 0;
 int lives = 3;
+
+//highscore variable
+unsigned int highScore = 0;
 
 // storing sprites in PROGMEM
 const unsigned char PROGMEM bootlogo[] =
@@ -226,7 +228,6 @@ void loop() {
   // Splashscreen state
   void doSplash() {
   arduboy.drawBitmap(0, 0, splash, 128, 64, WHITE);
-  int score = 0;
 
   // If 'A' button is pressed move to gameplay
   if (arduboy.justPressed(A_BUTTON))  { score = 0; lives = 3; state = 1; }
@@ -235,9 +236,14 @@ void loop() {
 
   // Gameover state
   void gameover() {
-  arduboy.setCursor(35, 15);
-  arduboy.print("GAME OVER");arduboy.setCursor(25, 30);
-  arduboy.print("SCORE:"); arduboy.setCursor(70, 30); arduboy.print(score);
+  if (score > highScore) {
+    highScore = score;
+  }
+  arduboy.setCursor(25, 20);
+  arduboy.print("* GAME OVER *");arduboy.setCursor(25, 40);
+  arduboy.print("SCORE:"); arduboy.setCursor(60, 40); arduboy.print(score);
+  arduboy.setCursor(25, 50);
+  arduboy.print("HIGHSCORE:"); arduboy.setCursor(85, 50); arduboy.print(highScore);
   if (arduboy.justPressed(A_BUTTON))  { state = 0; score = 0; }
 }
   // gameplay state
