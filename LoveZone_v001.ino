@@ -1,6 +1,26 @@
 #include <Arduboy2.h>
 #include <ArduboyTones.h>
 
+#define EEPROM_START_C1                 EEPROM_STORAGE_SPACE_START
+#define EEPROM_START_C2                 EEPROM_START_C1 + 1
+#define EEPROM_SCORE                    EEPROM_START_C1 + 2
+
+
+void initEEPROM() {
+
+  unsigned char c1 = EEPROM.read(EEPROM_START_C1);
+  unsigned char c2 = EEPROM.read(EEPROM_START_C2);
+
+  if (c1 != "L" || c2 != "Z") {   
+  
+    EEPROM.update(EEPROM_START_C1, "L");
+    EEPROM.update(EEPROM_START_C2, "Z");
+    EEPROM.put(EEPROM_SCORE, (unsigned int)0);
+      
+  }
+
+}
+
 Arduboy2 arduboy;
 ArduboyTones sound(arduboy.audio.enabled);
 Sprites sprite;
@@ -207,7 +227,7 @@ void setup() {
   arduboy.clear();
   arduboy.drawBitmap(0, 0, bootlogo, 128, 64, WHITE);
   arduboy.display();
-  EEPROM.get(78, highScore);
+  EEPROM.get(EEPROM_STORAGE_SPACE_START, highScore);
   delay(3500);
   
   // limits the frames per second
@@ -242,7 +262,7 @@ void loop() {
   // Gameover state
   void gameover() {
   if (score > highScore) {
-    highScore = score; EEPROM.put(78, highScore);
+    highScore = score; EEPROM.put(EEPROM_STORAGE_SPACE_START, highScore);
   }
   arduboy.setCursor(25, 20);
   arduboy.print(F("* GAME OVER *"));arduboy.setCursor(25, 40);
