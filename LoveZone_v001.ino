@@ -1,25 +1,9 @@
 #include <Arduboy2.h>
 #include <ArduboyTones.h>
 
-#define EEPROM_START_C1                 EEPROM_STORAGE_SPACE_START
-#define EEPROM_START_C2                 EEPROM_START_C1 + 1
-#define EEPROM_SCORE                    EEPROM_START_C1 + 2
-
-
-void initEEPROM() {
-
-  unsigned char c1 = EEPROM.read(EEPROM_START_C1);
-  unsigned char c2 = EEPROM.read(EEPROM_START_C2);
-
-  if (c1 != "L" || c2 != "Z") {   
-  
-    EEPROM.update(EEPROM_START_C1, "L");
-    EEPROM.update(EEPROM_START_C2, "Z");
-    EEPROM.put(EEPROM_SCORE, (unsigned int)0);
-      
-  }
-
-}
+#define EEPROM_START_C1                 (EEPROM_STORAGE_SPACE_START + 128)
+#define EEPROM_START_C2                 (EEPROM_START_C1 + 1)
+#define EEPROM_SCORE                    (EEPROM_START_C1 + 2)
 
 Arduboy2 arduboy;
 ArduboyTones sound(arduboy.audio.enabled);
@@ -221,13 +205,31 @@ const unsigned char PROGMEM cloudborderrmask[] =
 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x87, 0xdf, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 
 };
 
+void initEEPROM()
+{
+  char c1 = EEPROM.read(EEPROM_START_C1);
+  char c2 = EEPROM.read(EEPROM_START_C2);
+
+  highScore = 0;
+  
+  if (c1 != 'L' || c2 != 'Z')
+  {
+    EEPROM.update(EEPROM_START_C1, 'L');
+    EEPROM.update(EEPROM_START_C2, 'Z');
+  }
+  else
+  {
+    EEPROM.get(EEPROM_STORAGE_SPACE_START, highScore);
+  }
+}
+
 void setup() {
   // put your setup code here, to run once:
   arduboy.begin();
   arduboy.clear();
   arduboy.drawBitmap(0, 0, bootlogo, 128, 64, WHITE);
   arduboy.display();
-  EEPROM.get(EEPROM_STORAGE_SPACE_START, highScore);
+  initEEPROM();
   delay(3500);
   
   // limits the frames per second
@@ -246,8 +248,21 @@ void loop() {
   if (state == 0)  { doSplash(); }
   else if (state == 1)  { gameplay(); }
   else if (state == 2)  { gameover(); }
+  else if (state == 3)  { pause(); }
   
   arduboy.display();
+}
+
+// Pause state
+  void pause() {
+  arduboy.setCursor(37, 30);
+  arduboy.print(F("* PAUSE *"));
+  sprite.drawExternalMask(10, 27, heart, heartmask, 0, 0);
+  sprite.drawExternalMask(100, 27, heart, heartmask, 0, 0);
+
+  // If 'B' button is pressed move back to gameplay
+  if (arduboy.justPressed(B_BUTTON))  { state = 1; }
+
 }
 
   // Splashscreen state
@@ -269,6 +284,10 @@ void loop() {
   arduboy.print(F("SCORE:")); arduboy.setCursor(60, 40); arduboy.print(score);
   arduboy.setCursor(25, 50);
   arduboy.print(F("HIGHSCORE:")); arduboy.setCursor(85, 50); arduboy.print(highScore);
+  sprite.drawExternalMask(5, 10, enemy1, enemy1mask, 0, 0);
+  sprite.drawExternalMask(108, 10, enemy1, enemy1mask, 0, 0);
+  
+  // If 'A' button is pressed move to splash
   if (arduboy.justPressed(A_BUTTON))  { state = 0; score = 0; }
 }
   // gameplay state
@@ -309,20 +328,22 @@ void loop() {
   if( enemy1y > 64 ) {
   enemy1y = -14; enemy1x = random(26,87);
 }
-// resetting position for next heart to fall
+  // resetting position for next heart to fall
   hearty = hearty +2;
   if( hearty > 64 ) {
   hearty = -14; heartx = random(26,87);
 }
-    // here i display the main sprite
+  // here i display the main sprite
   sprite.drawExternalMask(player.x, player.y, player1, player1mask, 0, 0);
   
-    //Score rectangle area
+  //Score rectangle area
   arduboy.fillRect(0, 0, 128, 10, BLACK);
   arduboy.setCursor(1, 1);
   arduboy.print(F("SCORE:")); arduboy.setCursor(37, 1); arduboy.print(score);
+  arduboy.setCursor(85, 1);
+  arduboy.print(F("SHIPS:")); arduboy.setCursor(120, 1); arduboy.print(lives);
   
-    // setting up random position for the heart coordinate
+  // setting up random position for the heart coordinate
   
   // what is happening when we press buttons
   if(arduboy.pressed(LEFT_BUTTON) && player.x > 18) {
@@ -337,26 +358,28 @@ void loop() {
     if(arduboy.pressed(DOWN_BUTTON) && player.y < 49) {
         player.y = player.y + 1;
     }
-    if(arduboy.pressed(A_BUTTON)) {
+    if(arduboy.justPressed(A_BUTTON)) {
         sound.tone(NOTE_C4,100, NOTE_E4,100, NOTE_G4,100);
-        arduboy.setCursor(60, 1);
-        arduboy.print(F("I LOVE YOU !!"));
+        arduboy.setCursor(60, 1); arduboy.drawLine(player.x + 8, player.y - 1, player.x + 8, 10, WHITE);
     }
-    if(arduboy.pressed(B_BUTTON)) {
-        sound.tone(NOTE_C4,70, NOTE_E4,70, NOTE_G4,7);
+    if(arduboy.justPressed(B_BUTTON)) {
+        sound.tone(NOTE_C4,70, NOTE_E4,70, NOTE_G4,7); state = 3;
     }
     
-    // checking for collisions
-    Rect playerRect = { player.x + 5, player.y + 5, 12, 11 };
-    Rect enemy1Rect = { enemy1x + 5, enemy1y + 20, 10, 10 };
-    Rect heartRect = { heartx + 5, hearty + 5, 11, 9 };
-    if(arduboy.collide(playerRect, heartRect))
+  // checking for collisions
+  Rect playerRect = { player.x + 5, player.y + 5, 12, 11 };
+  Rect enemy1Rect = { enemy1x + 5, enemy1y + 20, 10, 10 };
+  Rect heartRect = { heartx + 5, hearty + 5, 11, 9 };
+  
+  if(arduboy.collide(playerRect, heartRect))
 {
-  score = score + 10; sound.tone(NOTE_C4,100, NOTE_E4,100, NOTE_G4,100); hearty = -14; heartx = random(26,87);
+  score = score + 5; sound.tone(NOTE_C4,100, NOTE_E4,100, NOTE_G4,100); hearty = -14; heartx = random(26,87);
 }
-if(arduboy.collide(playerRect, enemy1Rect))
+
+  if(arduboy.collide(playerRect, enemy1Rect))
 {
-  lives = lives - 1; sound.tone(NOTE_G4,100, NOTE_G4,100, NOTE_G4,100); enemy1y = -14; enemy1x = random(26,87);
+  lives = lives - 1; sound.tone(NOTE_C4,100, NOTE_C4,100, NOTE_C4,100); enemy1y = -14; enemy1x = random(26,87);
+
 }
   // check is game is over
   if(lives < 0) { state = 2; }
