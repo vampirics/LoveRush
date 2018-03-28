@@ -36,6 +36,7 @@ int8_t hearty = -14;
 
 int score = 0;
 int8_t lives = 3;
+bool primed = false;
 
 //highscore variable
 unsigned int highScore = 0;
@@ -267,6 +268,36 @@ void loop() {
 
   // Splashscreen state
   void doSplash() {
+    
+  // Reset highScore value option
+if(!primed)
+{
+  if (arduboy.justPressed(B_BUTTON))
+  {
+    primed = true;
+  }
+}
+else
+{
+  if (arduboy.justPressed(DOWN_BUTTON))
+  {
+    highScore = 0;
+    EEPROM.put(EEPROM_STORAGE_SPACE_START, highScore);
+    primed = false;
+  }
+  else if (arduboy.justPressed(B_BUTTON))
+  {
+    primed = false;
+  }
+
+  // Display a warning
+  // Might want to change the position
+  arduboy.setCursor(1, 1);
+  arduboy.print(F("DOWN:DEL."));
+  arduboy.setCursor(51, 1);
+  arduboy.print(F("B:CANCEL"));
+}
+
   arduboy.drawBitmap(0, 0, splash, 128, 64, WHITE);
 
   // If 'A' button is pressed move to gameplay
