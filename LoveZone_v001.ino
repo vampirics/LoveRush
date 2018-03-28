@@ -6,28 +6,32 @@ ArduboyTones sound(arduboy.audio.enabled);
 Sprites sprite;
 
 // setting up variables
-int playerx = 54;
-int playery = 40;
-int cloudlx = 0;
-int cloudly = 0;
-int cloudrx = 103;
-int cloudry = 0;
-int state = 0;
+
+struct Position {
+  int8_t x;
+  int8_t y;
+};
+
+Position player = { 54, 40 };
+Position cloudl = { 0, 0 };
+Position cloudr = { 103, 0 };
+
+uint8_t state = 0;
 
 // variable for Cloud backdrop
-int backdropx = -3;
-int backdropy = 0;
+int8_t backdropx = -3;
+int8_t backdropy = 0;
 
 // variable for enemy position
-int enemy1x = random(26,87);
-int enemy1y = -14;
+int8_t enemy1x = random(26,87);
+int8_t enemy1y = -14;
 
 // variable for heart position
-int heartx = random(26,87);
-int hearty = -14;
+int8_t heartx = random(26,87);
+int8_t hearty = -14;
 
 int score = 0;
-int lives = 3;
+int8_t lives = 3;
 
 //highscore variable
 unsigned int highScore = 0;
@@ -203,6 +207,7 @@ void setup() {
   arduboy.clear();
   arduboy.drawBitmap(0, 0, bootlogo, 128, 64, WHITE);
   arduboy.display();
+  EEPROM.get(78, highScore);
   delay(3500);
   
   // limits the frames per second
@@ -237,13 +242,13 @@ void loop() {
   // Gameover state
   void gameover() {
   if (score > highScore) {
-    highScore = score;
+    highScore = score; EEPROM.put(78, highScore);
   }
   arduboy.setCursor(25, 20);
-  arduboy.print("* GAME OVER *");arduboy.setCursor(25, 40);
-  arduboy.print("SCORE:"); arduboy.setCursor(60, 40); arduboy.print(score);
+  arduboy.print(F("* GAME OVER *"));arduboy.setCursor(25, 40);
+  arduboy.print(F("SCORE:")); arduboy.setCursor(60, 40); arduboy.print(score);
   arduboy.setCursor(25, 50);
-  arduboy.print("HIGHSCORE:"); arduboy.setCursor(85, 50); arduboy.print(highScore);
+  arduboy.print(F("HIGHSCORE:")); arduboy.setCursor(85, 50); arduboy.print(highScore);
   if (arduboy.justPressed(A_BUTTON))  { state = 0; score = 0; }
 }
   // gameplay state
@@ -252,25 +257,25 @@ void loop() {
   // here i display the background
   arduboy.drawBitmap(backdropx, backdropy, cloudbackdrop, 128, 64, WHITE);
   arduboy.drawBitmap(backdropx, backdropy - 64, cloudbackdrop, 128, 64, WHITE);
-  sprite.drawExternalMask(cloudlx, cloudly, cloudborderl, cloudborderlmask, 0, 0);
-  sprite.drawExternalMask(cloudrx, cloudry, cloudborderr, cloudborderrmask, 0, 0);
-  sprite.drawExternalMask(cloudlx, cloudly - 64, cloudborderl, cloudborderlmask, 0, 0);
-  sprite.drawExternalMask(cloudrx, cloudry - 64, cloudborderr, cloudborderrmask, 0, 0);
-  sprite.drawExternalMask(cloudlx, cloudly + 64, cloudborderl, cloudborderlmask, 0, 0);
-  sprite.drawExternalMask(cloudrx, cloudry + 64, cloudborderr, cloudborderrmask, 0, 0);
+  sprite.drawExternalMask(cloudl.x, cloudl.y, cloudborderl, cloudborderlmask, 0, 0);
+  sprite.drawExternalMask(cloudr.x, cloudr.y, cloudborderr, cloudborderrmask, 0, 0);
+  sprite.drawExternalMask(cloudl.x, cloudl.y - 64, cloudborderl, cloudborderlmask, 0, 0);
+  sprite.drawExternalMask(cloudr.x, cloudr.y - 64, cloudborderr, cloudborderrmask, 0, 0);
+  sprite.drawExternalMask(cloudl.x, cloudl.y + 64, cloudborderl, cloudborderlmask, 0, 0);
+  sprite.drawExternalMask(cloudr.x, cloudr.y + 64, cloudborderr, cloudborderrmask, 0, 0);
   
   // background scrolling loop
   backdropy = backdropy +1;
   if( backdropy > 64 ) {
   backdropy = 0;
 }
-  cloudly = cloudly +2;
-  cloudry = cloudry +2;
-  if( cloudly > 64 ) {
-  cloudly = 0;
+  cloudl.y = cloudl.y +2;
+  cloudr.y = cloudr.y +2;
+  if( cloudl.y > 64 ) {
+  cloudl.y = 0;
 }
-  if( cloudry > 64 ) {
-  cloudry = 0;
+  if( cloudr.y > 64 ) {
+  cloudr.y = 0;
 }
 
   // falling heart display
@@ -290,39 +295,39 @@ void loop() {
   hearty = -14; heartx = random(26,87);
 }
     // here i display the main sprite
-  sprite.drawExternalMask(playerx, playery, player1, player1mask, 0, 0);
+  sprite.drawExternalMask(player.x, player.y, player1, player1mask, 0, 0);
   
     //Score rectangle area
   arduboy.fillRect(0, 0, 128, 10, BLACK);
   arduboy.setCursor(1, 1);
-  arduboy.print("SCORE:"); arduboy.setCursor(37, 1); arduboy.print(score);
+  arduboy.print(F("SCORE:")); arduboy.setCursor(37, 1); arduboy.print(score);
   
     // setting up random position for the heart coordinate
   
   // what is happening when we press buttons
-  if(arduboy.pressed(LEFT_BUTTON) && playerx > 18) {
-        playerx = playerx - 1;
+  if(arduboy.pressed(LEFT_BUTTON) && player.x > 18) {
+        player.x = player.x - 1;
     }
-    if(arduboy.pressed(RIGHT_BUTTON) && playerx < 92) {
-        playerx = playerx + 1;
+    if(arduboy.pressed(RIGHT_BUTTON) && player.x < 92) {
+        player.x = player.x + 1;
     }
-    if(arduboy.pressed(UP_BUTTON) && playery > 10) {
-        playery = playery - 1; 
+    if(arduboy.pressed(UP_BUTTON) && player.y > 10) {
+        player.y = player.y - 1; 
     }
-    if(arduboy.pressed(DOWN_BUTTON) && playery < 49) {
-        playery = playery + 1;
+    if(arduboy.pressed(DOWN_BUTTON) && player.y < 49) {
+        player.y = player.y + 1;
     }
     if(arduboy.pressed(A_BUTTON)) {
         sound.tone(NOTE_C4,100, NOTE_E4,100, NOTE_G4,100);
         arduboy.setCursor(60, 1);
-        arduboy.print("I LOVE YOU !!");
+        arduboy.print(F("I LOVE YOU !!"));
     }
     if(arduboy.pressed(B_BUTTON)) {
         sound.tone(NOTE_C4,70, NOTE_E4,70, NOTE_G4,7);
     }
     
     // checking for collisions
-    Rect playerRect = { playerx + 5, playery + 5, 12, 11 };
+    Rect playerRect = { player.x + 5, player.y + 5, 12, 11 };
     Rect enemy1Rect = { enemy1x + 5, enemy1y + 20, 10, 10 };
     Rect heartRect = { heartx + 5, hearty + 5, 11, 9 };
     if(arduboy.collide(playerRect, heartRect))
