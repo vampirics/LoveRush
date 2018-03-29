@@ -127,7 +127,7 @@ const unsigned char PROGMEM player1[] =
 const unsigned char PROGMEM player1mask[] =
 {
 // width, height,
-17, 15,
+//17, 15,
 
 //frame 0
 0x80, 0xf0, 0xf8, 0xf0, 0xf0, 0xe0, 0xf0, 0xfe, 0xff, 0xfe, 0xf0, 0xe0, 0xf0, 0xf0, 0xf8, 0xf0, 0x80, 
@@ -442,6 +442,7 @@ void gameplay() {
   hearty = -14; heartx = random(26,87);
   }
   // here i display the main sprite
+  //Sprites::drawPlusMask(player.x, player.y, player1, shipFrame);
   Sprites::drawExternalMask(player.x, player.y, player1, player1mask, shipFrame, shipFrame);
   //sprite.drawExternalMask(player.x, player.y, player1, player1mask, 0, 0);
   
