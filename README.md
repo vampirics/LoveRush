@@ -10,3 +10,9 @@ Game Features:
 - Parralax scrolling
 - HighScore saving (with a way to reset it by pressing B on title screen)
 - Cute hearts all over the screen!
+- Press A to shoot
+- Press B to pause the game
+- Catching heart gives you 5pts
+- Shooting a heart is -10pts
+- Shooting angry faces gives you 10pts
+- A collision with an angry face is -1 life (you have 4 lives total)
