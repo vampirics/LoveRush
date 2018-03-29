@@ -288,7 +288,7 @@ void initEEPROM() {
 }
 
 void setup() {
-  // put your setup code here, to run once:
+  // things that needs to be ran once
   arduboy.begin();
   arduboy.clear();
   arduboy.drawBitmap(0, 0, bootlogo, 128, 64, WHITE);
@@ -301,9 +301,7 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  
-  // Wait for the next frame
+    // Wait for the next frame
    if (!(arduboy.nextFrame())) return;
   
   arduboy.pollButtons();
@@ -489,7 +487,8 @@ void gameplay() {
     if(arduboy.justPressed(B_BUTTON)) {
         sound.tone(NOTE_C4,70, NOTE_E4,70, NOTE_G4,7); state = 3;
     }
-  
+  // make sure score doesn't go under 0
+  if(score < 0) { score = 0; }
   // check is game is over
   if(lives < 0) { state = 2; }
 }
