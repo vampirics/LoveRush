@@ -331,16 +331,16 @@ const unsigned char PROGMEM speedupmask[] =
 void initEEPROM() {
   char c1 = EEPROM.read(EEPROM_START_C1);
   char c2 = EEPROM.read(EEPROM_START_C2);
-
-  highScore = 0;
   
   if (c1 != 'L' || c2 != 'Z') {
-  EEPROM.update(EEPROM_START_C1, 'L');
-  EEPROM.update(EEPROM_START_C2, 'Z');
+    highScore = 0;
+    EEPROM.update(EEPROM_START_C1, 'L');
+    EEPROM.update(EEPROM_START_C2, 'Z');
+    EEPROM.update(EEPROM_SCORE, highScore);
   }
-    else {
-    EEPROM.get(EEPROM_STORAGE_SPACE_START, highScore);
-    }
+  else {
+    EEPROM.get(EEPROM_SCORE, highScore);
+  }
 }
 
 void setup() {
@@ -430,7 +430,7 @@ else {
   if (arduboy.justPressed(DOWN_BUTTON))
   {
     highScore = 0;
-    EEPROM.put(EEPROM_STORAGE_SPACE_START, highScore);
+    EEPROM.put(EEPROM_SCORE, highScore);
     primed = false;
 }
   else if (arduboy.justPressed(B_BUTTON)) {
@@ -455,7 +455,8 @@ else {
   // Gameover state
   void gameover() {
   if (score > highScore) {
-    highScore = score; EEPROM.put(EEPROM_STORAGE_SPACE_START, highScore);
+    highScore = score;
+    EEPROM.put(EEPROM_SCORE, highScore);
   }
   scrollingbackground();
   arduboy.fillRect(0, 20, 128, 31, BLACK);
