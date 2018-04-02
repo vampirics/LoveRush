@@ -530,15 +530,15 @@ if( !(arduboy.frameCount%(40*60)) ){ // increase speed every 40 seconds, at 60 f
   Rect heartRect = { heartx + 5, hearty + 5, 11, 9 };
   
   if(arduboy.collide(playerRect, heartRect)) {
-  score = score + 5; sound.tone(NOTE_C4,100, NOTE_E4,100, NOTE_G4,100); hearty = -14; heartx = random(26,87);
+  score = score + 5; sound.tone(NOTE_E3,80, NOTE_E4,80, NOTE_E5,80); hearty = -14; heartx = random(26,87);
   }
 
   if(arduboy.collide(playerRect, enemy1Rect)) {
-  lives = lives - 1; youarehit(); sound.tone(NOTE_C4,100, NOTE_C4,100, NOTE_C4,100); enemy1y = -14; enemy1x = random(26,87);
+  lives = lives - 1; youarehit(); sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100); enemy1y = -14; enemy1x = random(26,87);
   }
   
     if(arduboy.collide(playerRect, enemy2Rect)) {
-  lives = lives - 1; youarehit(); sound.tone(NOTE_C4,100, NOTE_C4,100, NOTE_C4,100); enemy2y = -14; enemy2x = random(26,87);
+  lives = lives - 1; youarehit(); sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100); enemy2y = -14; enemy2x = random(26,87);
   }
   
   // what is happening when we press buttons
@@ -555,14 +555,14 @@ if( !(arduboy.frameCount%(40*60)) ){ // increase speed every 40 seconds, at 60 f
         player.y = player.y + 1;
     }
     if(arduboy.justPressed(A_BUTTON)) {
-        sound.tone(NOTE_C4,100, NOTE_E4,100, NOTE_G4,100);
+        sound.tone(NOTE_E4,50, NOTE_D4,100, NOTE_E4,50);
         arduboy.drawLine(player.x + 8, player.y - 1, player.x + 8, 10, WHITE);
         Rect laserRect = { player.x + 8, player.y - 64, 2, 64 };
           if(arduboy.collide(laserRect, enemy1Rect)) {
-          score = score + 10; sound.tone(NOTE_C4,100, NOTE_D4,80, NOTE_E4,50); enemy1y = -14; enemy1x = random(26,87);
+          score = score + 10; sound.tone(NOTE_F4,100, NOTE_F3,100, NOTE_F2,100); enemy1y = -14; enemy1x = random(26,87);
           }
             if(arduboy.collide(laserRect, enemy2Rect)) {
-            score = score + 10; sound.tone(NOTE_C4,100, NOTE_D4,80, NOTE_E4,50); enemy2y = -14; enemy2x = random(26,87);
+            score = score + 10; sound.tone(NOTE_F4,100, NOTE_F3,100, NOTE_F2,100); enemy2y = -14; enemy2x = random(26,87);
             }
               if(arduboy.collide(laserRect, heartRect)) {
               score = score - 10; sound.tone(NOTE_C4,100, NOTE_C4,100, NOTE_C4,100);
