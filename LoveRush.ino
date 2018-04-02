@@ -51,6 +51,9 @@ int8_t speed = 1;
 uint16_t ledTimer = 0;
 uint16_t ledTimerg = 0;
 
+int8_t ee1 = 0;
+int8_t ee2 = 0;
+
 //highscore variable
 unsigned int highScore = 0;
 
@@ -408,7 +411,6 @@ void pause() {
   arduboy.print(F("* PAUSE *"));
   sprite.drawExternalMask(10, 27, heart, heartmask, 0, 0);
   sprite.drawExternalMask(100, 27, heart, heartmask, 0, 0);
-
   // If 'B' button is pressed move back to gameplay
   if (arduboy.justPressed(B_BUTTON))  { state = 2; }
 
@@ -456,11 +458,14 @@ else {
     highScore = score; EEPROM.put(EEPROM_STORAGE_SPACE_START, highScore);
   }
   scrollingbackground();
-  arduboy.setCursor(25, 13);
-  arduboy.print(F("* GAME OVER *"));arduboy.setCursor(25, 33);
-  arduboy.print(F("SCORE:")); arduboy.setCursor(60, 33); arduboy.print(score);
-  arduboy.setCursor(25, 43);
-  arduboy.print(F("HIGHSCORE:")); arduboy.setCursor(85, 43); arduboy.print(highScore);
+  arduboy.fillRect(0, 20, 128, 31, BLACK);
+  arduboy.drawLine(0, 21, 128, 21, WHITE);
+  arduboy.drawLine(0, 49, 128, 49, WHITE);
+  arduboy.setCursor(25, 9);
+  arduboy.print(F("* GAME OVER *"));arduboy.setCursor(25, 27);
+  arduboy.print(F("SCORE:")); arduboy.setCursor(60, 27); arduboy.print(score);
+  arduboy.setCursor(25, 37);
+  arduboy.print(F("HIGHSCORE:")); arduboy.setCursor(85, 37); arduboy.print(highScore);
 
   // If 'A' button is pressed move to splash
   if (arduboy.justPressed(A_BUTTON))  { state = 1; score = 0; }
