@@ -48,6 +48,9 @@ int8_t clx = -128;
 int8_t crx = 129;
 int8_t speed = 1;
 
+uint16_t ledTimer = 0;
+uint16_t ledTimerg = 0;
+
 //highscore variable
 unsigned int highScore = 0;
 
@@ -464,17 +467,30 @@ else {
   };
 
 void youarehit() {
-digitalWrite(RED_LED, LOW); arduboy.delayShort(100); digitalWrite(RED_LED, HIGH);
+arduboy.digitalWriteRGB(RED_LED, RGB_ON);
+ledTimer = arduboy.frameCount + 30;
 }
 
 void speedupdisplay() {
-digitalWrite(GREEN_LED, LOW); arduboy.delayShort(100); digitalWrite(GREEN_LED, HIGH);
-sound.tone(NOTE_G4,100, NOTE_E4,100, NOTE_C4,100);
-sound.tone(NOTE_C4,100, NOTE_E4,100, NOTE_G4,100);
+arduboy.digitalWriteRGB(GREEN_LED, RGB_ON);
+ledTimerg = arduboy.frameCount + 30;
+sound.tone(NOTE_G4,100, NOTE_E5,100, NOTE_C6,100);
+sound.tone(NOTE_C5,100, NOTE_E4,100, NOTE_G3,100);
 }
 
   // gameplay state
 void gameplay() {
+  
+  if(ledTimer > 0 && arduboy.frameCount >= ledTimer)
+  {
+  arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
+  ledTimer = 0;
+  }
+    if(ledTimerg > 0 && arduboy.frameCount >= ledTimerg)
+    {
+    arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF);
+    ledTimerg = 0;
+    }
     
   // let's call my scrolling background
   scrollingbackground();
@@ -574,5 +590,5 @@ if( !(arduboy.frameCount%(40*60)) ){ // increase speed every 40 seconds, at 60 f
   // make sure score doesn't go under 0
   if(score < 0) { score = 0; }
   // check is game is over
-  if(lives < 0) { state = 3; speed = 1; delay(500); }
+  if(lives < 0) { state = 3; speed = 1; delay(500); arduboy.digitalWriteRGB(RED_LED, RGB_OFF); arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF);}
 }
