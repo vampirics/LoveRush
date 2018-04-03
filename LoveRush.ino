@@ -54,6 +54,8 @@ uint16_t ledTimerg = 0;
 int8_t ee1 = 0;
 int8_t ee2 = 0;
 
+uint8_t fadeWidth = 0;
+
 //highscore variable
 unsigned int highScore = 0;
 
@@ -347,9 +349,6 @@ void setup() {
   // things that needs to be ran once
   arduboy.begin();
   arduboy.clear();
-  arduboy.drawBitmap(0, 0, bootlogo, 128, 64, WHITE);
-  arduboy.display();
-  delay(1000);
   initEEPROM();
   
   // limits the frames per second
@@ -375,8 +374,17 @@ void loop() {
 void vsboot() {
   // Vsoft logo display
   arduboy.drawBitmap(0, 0, bootlogo, 128, 64, WHITE);
-  delay(500);
-  state = 1;
+  for(uint8_t i = 0; i < (HEIGHT / 2); ++i)
+  {
+    arduboy.drawFastHLine(0, (i * 2), fadeWidth, BLACK);
+    arduboy.drawFastHLine((WIDTH - fadeWidth), (i * 2) + 1, fadeWidth, BLACK);
+  }
+  arduboy.display();
+  // If fade isn't complete, increase the counter
+  if(fadeWidth < WIDTH)
+    ++fadeWidth;
+  else // Otherwise move to the next state
+    state = 1;
 }
 
   // scrolling background1 function
@@ -593,8 +601,15 @@ if( !(arduboy.frameCount%(40*60)) ){ // increase speed every 40 seconds, at 60 f
     if(arduboy.justPressed(B_BUTTON)) {
         sound.tone(NOTE_C4,70, NOTE_E4,70, NOTE_G4,7); state = 4;
     }
+  
   // make sure score doesn't go under 0
   if(score < 0) { score = 0; }
+  
   // check is game is over
-  if(lives < 0) { state = 3; speed = 1; delay(500); arduboy.digitalWriteRGB(RED_LED, RGB_OFF); arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF);}
+  if(lives < 0) {
+  state = 3;
+  speed = 1;
+  arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
+  arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
+  }
 }
