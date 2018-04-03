@@ -368,8 +368,9 @@ void scrollingbackground() {
   sprite.drawExternalMask(cloudr.x, cloudr.y - 64, cloudborderr, cloudborderrmask, 0, 0);
   sprite.drawExternalMask(cloudl.x, cloudl.y + 64, cloudborderl, cloudborderlmask, 0, 0);
   sprite.drawExternalMask(cloudr.x, cloudr.y + 64, cloudborderr, cloudborderrmask, 0, 0);
+  
   // background scrolling loop
-  backdropy = backdropy +1;
+  ++backdropy;
   if( backdropy > 64 ) {
   backdropy = 0;
   }
@@ -403,14 +404,14 @@ void doSplash() {
   {
     primed = true;
   }
-}
-else {
+  }
+  else {
   if (arduboy.justPressed(DOWN_BUTTON))
   {
     highScore = 0;
     EEPROM.put(EEPROM_SCORE, highScore);
     primed = false;
-}
+  }
   else if (arduboy.justPressed(B_BUTTON)) {
     primed = false;
   }
@@ -421,7 +422,7 @@ else {
   arduboy.print(F("DOWN:DEL."));
   arduboy.setCursor(66, 1);
   arduboy.print(F("B:CANCEL"));
-}
+  }
 
   arduboy.drawBitmap(0, 0, splash, 128, 64, WHITE);
   fadeIn();
@@ -451,11 +452,13 @@ else {
   arduboy.print(F("* GAME OVER *"));arduboy.setCursor(25, 27);
   arduboy.print(F("SCORE:")); arduboy.setCursor(60, 27); arduboy.print(score);
   arduboy.setCursor(25, 37);
-  arduboy.print(F("HIGHSCORE:")); arduboy.setCursor(85, 37); arduboy.print(highScore);
+  arduboy.print(F("HIGHSCORE:"));
+  arduboy.setCursor(85, 37);
+  arduboy.print(highScore);
 
   // If 'A' button is pressed move to splash
   if (arduboy.justPressed(A_BUTTON))  { state = 1; score = 0; }
-  };
+  }
 
 void youarehit() {
 arduboy.digitalWriteRGB(RED_LED, RGB_ON);
