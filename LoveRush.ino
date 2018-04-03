@@ -40,7 +40,7 @@ int8_t hearty = -14;
 
 uint8_t shipFrame = 0;
 
-int score = 0;
+uint8_t score = 0;
 int8_t lives = 3;
 bool primed = false;
 
@@ -56,6 +56,26 @@ uint8_t fadeWidth;
 
 //highscore variable
 unsigned int highScore = 0;
+
+// Extract individual digits of a uint8_t
+template< size_t size > void extractDigits(uint8_t (&buffer)[size], uint8_t value)
+{
+  for(uint8_t i = 0; i < size; ++i)
+  {
+    buffer[i] = value % 10;
+    value /= 10;
+  }
+}
+
+// Extract individual digits of a uint16_t
+template< size_t size > void extractDigits(uint8_t (&buffer)[size], uint16_t value)
+{
+  for(uint8_t i = 0; i < size; ++i)
+  {
+    buffer[i] = value % 10;
+    value /= 10;
+  }
+}
 
 // storing sprites in PROGMEM
 const unsigned char PROGMEM bootlogo[] =
@@ -440,6 +460,10 @@ void doSplash() {
 
   // Gameover state
   void gameover() {
+    
+  // Only need 5 for a uint16_t
+  uint8_t digits[5];
+  
   if (score > highScore) {
     highScore = score;
     EEPROM.put(EEPROM_SCORE, highScore);
@@ -448,13 +472,23 @@ void doSplash() {
   arduboy.fillRect(0, 20, 128, 31, BLACK);
   arduboy.drawLine(0, 21, 128, 21, WHITE);
   arduboy.drawLine(0, 49, 128, 49, WHITE);
+  
   arduboy.setCursor(25, 9);
-  arduboy.print(F("* GAME OVER *"));arduboy.setCursor(25, 27);
-  arduboy.print(F("SCORE:")); arduboy.setCursor(60, 27); arduboy.print(score);
-  arduboy.setCursor(25, 37);
-  arduboy.print(F("HIGHSCORE:"));
-  arduboy.setCursor(85, 37);
-  arduboy.print(highScore);
+  arduboy.print(F("* GAME OVER *"));
+  
+  arduboy.setCursor(30, 27);
+  arduboy.print(F("SCORE:"));
+  arduboy.setCursor(65, 27);
+  extractDigits(digits, score);
+  for(uint8_t i = 5; i > 0; --i)
+  arduboy.print(digits[i - 1]);
+  
+  arduboy.setCursor(15, 37);
+  arduboy.print(F("HIGH SCORE:"));
+  arduboy.setCursor(81, 37);
+  extractDigits(digits, highScore);
+  for(uint8_t i = 5; i > 0; --i)
+  arduboy.print(digits[i - 1]);
 
   // If 'A' button is pressed move to splash
   if (arduboy.justPressed(A_BUTTON))  { state = 1; score = 0; }
@@ -495,10 +529,8 @@ void gameplay() {
   shipFrame %= 2; // Remainder of dividing by 2
 }
 
-if( !(arduboy.frameCount%(40*60)) ){ // increase speed every 40 seconds, at 60 fps
- speed++; // increase by 1
- speedupdisplay();
-}
+  if (score > 699 ) { speed = 3; speedupdisplay(); }
+  else if(score > 499 ) { speed = 2; speedupdisplay(); }
 
   // falling heart display
   sprite.drawExternalMask(heartx, hearty, heart, heartmask, 0, 0);
