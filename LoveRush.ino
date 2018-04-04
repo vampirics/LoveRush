@@ -40,7 +40,7 @@ int8_t hearty = -14;
 
 uint8_t shipFrame = 0;
 
-int8_t lives = 3;
+int8_t shield = 3;
 bool primed = false;
 
 int8_t speed = 1;
@@ -51,11 +51,16 @@ uint16_t ledTimerg = 0;
 int8_t ee1 = 0;
 int8_t ee2 = 0;
 
+int8_t heartcounter = 0;
+
 uint8_t fadeWidth;
 
 // score variables
 uint16_t score = 0;
 uint16_t highScore = 0;
+
+// Only need 5 for a uint16_t
+uint8_t digits[5];
 
 // Extract individual digits of a uint8_t
 template< size_t size > void extractDigits(uint8_t (&buffer)[size], uint8_t value)
@@ -451,7 +456,7 @@ void doSplash() {
   if (arduboy.justPressed(A_BUTTON))  {
     arduboy.initRandomSeed();
     score = 0;
-    lives = 3;
+    shield = 3;
     state = 2; 
     resetFadeIn();
   }
@@ -460,9 +465,6 @@ void doSplash() {
 
   // Gameover state
   void gameover() {
-    
-  // Only need 5 for a uint16_t
-  uint8_t digits[5];
   
   if (score > highScore) {
     highScore = score;
@@ -499,6 +501,12 @@ arduboy.digitalWriteRGB(RED_LED, RGB_ON);
 ledTimer = arduboy.frameCount + 30;
 }
 
+void oneup() {
+arduboy.digitalWriteRGB(GREEN_LED, RGB_ON);
+sound.tone(NOTE_E6,100, NOTE_E7,100, NOTE_E8,100);
+ledTimerg = arduboy.frameCount + 30;
+}
+
 void speedupdisplay() {
 arduboy.digitalWriteRGB(GREEN_LED, RGB_ON);
 ledTimerg = arduboy.frameCount + 30;
@@ -508,6 +516,8 @@ sound.tone(NOTE_C5,100, NOTE_E4,100, NOTE_G3,100);
 
   // gameplay state
 void gameplay() {
+  
+  uint16_t oldScore = score;
   
   if(ledTimer > 0 && arduboy.frameCount >= ledTimer)
   {
@@ -528,9 +538,6 @@ void gameplay() {
   ++shipFrame; // Add 1
   shipFrame %= 2; // Remainder of dividing by 2
 }
-
-  if (score > 699 ) { speed = 3; speedupdisplay(); }
-  else if(score > 499 ) { speed = 2; speedupdisplay(); }
 
   // falling heart display
   sprite.drawExternalMask(heartx, hearty, heart, heartmask, 0, 0);
@@ -561,9 +568,13 @@ void gameplay() {
   //Score rectangle area
   arduboy.fillRect(0, 0, 128, 10, BLACK);
   arduboy.setCursor(1, 1);
-  arduboy.print(F("SCORE:")); arduboy.setCursor(37, 1); arduboy.print(score);
-  arduboy.setCursor(85, 1);
-  arduboy.print(F("SHIPS:")); arduboy.setCursor(120, 1); arduboy.print(lives);
+  arduboy.print(F("SCORE:")); arduboy.setCursor(37, 1);
+  extractDigits(digits, score);
+  for(uint8_t i = 5; i > 0; --i)
+  arduboy.print(digits[i - 1]);
+  
+  arduboy.setCursor(78, 1);
+  arduboy.print(F("SHIELD:")); arduboy.setCursor(120, 1); arduboy.print(shield);
   
 // checking for collisions
   Rect playerRect = { player.x + 5, player.y + 5, 12, 11 };
@@ -572,16 +583,16 @@ void gameplay() {
   Rect heartRect = { heartx + 5, hearty + 5, 11, 9 };
   
   if(arduboy.collide(playerRect, heartRect)) {
-  score = score + 5; sound.tone(NOTE_E3,80, NOTE_E4,80, NOTE_E5,80); hearty = -14; heartx = random(26,87);
+  score = score + 5; ++heartcounter; sound.tone(NOTE_E3,80, NOTE_E4,80, NOTE_E5,80); hearty = -14; heartx = random(26,87);
   }
 
   if(arduboy.collide(playerRect, enemy1Rect)) {
-  lives = lives - 1; youarehit(); sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100); enemy1y = -14; enemy1x = random(26,87);
+  --shield; youarehit(); sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100); enemy1y = -14; enemy1x = random(26,87);
   }
   
     if(arduboy.collide(playerRect, enemy2Rect)) {
-  lives = lives - 1; youarehit(); sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100); enemy2y = -14; enemy2x = random(26,87);
-  }
+    --shield; youarehit(); sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100); enemy2y = -14; enemy2x = random(26,87);
+    }
   
   // what is happening when we press buttons
   if(arduboy.pressed(LEFT_BUTTON) && player.x > 18) {
@@ -613,9 +624,16 @@ void gameplay() {
     if(arduboy.justPressed(B_BUTTON)) {
         sound.tone(NOTE_C4,70, NOTE_E4,70, NOTE_G4,7); state = 4;
     }
+
+  // check if speed increase triggered
+  if(score >= 700 && oldScore < 700) { speed = 3; speedupdisplay(); }
+  else if(score >= 500 && oldScore < 500) { speed = 2; speedupdisplay(); }
+  
+  //check if you gain a life
+  if(heartcounter >= 15) { ++shield; oneup(); heartcounter = 0; }
   
   // check is game is over
-  if(lives < 0) {
+  if(shield < 0) {
   speed = 1;
   state = 3;
   arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
