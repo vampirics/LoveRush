@@ -40,7 +40,6 @@ int8_t hearty = -14;
 
 uint8_t shipFrame = 0;
 
-uint8_t score = 0;
 int8_t lives = 3;
 bool primed = false;
 
@@ -54,8 +53,9 @@ int8_t ee2 = 0;
 
 uint8_t fadeWidth;
 
-//highscore variable
-unsigned int highScore = 0;
+// score variables
+uint16_t score = 0;
+uint16_t highScore = 0;
 
 // Extract individual digits of a uint8_t
 template< size_t size > void extractDigits(uint8_t (&buffer)[size], uint8_t value)
@@ -613,9 +613,6 @@ void gameplay() {
     if(arduboy.justPressed(B_BUTTON)) {
         sound.tone(NOTE_C4,70, NOTE_E4,70, NOTE_G4,7); state = 4;
     }
-  
-  // make sure score doesn't go under 0
-  if(score < 0) { score = 0; }
   
   // check is game is over
   if(lives < 0) {
