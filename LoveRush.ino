@@ -30,15 +30,16 @@ int8_t backdropy = 0;
 
 // variable for enemy position
 int8_t enemy1x = random(26,87);
-int8_t enemy1y = -14;
+int8_t enemy1y = -28;
 int8_t enemy2x = random(26,87);
-int8_t enemy2y = -14;
+int8_t enemy2y = -28;
 
 // variable for heart position
 int8_t heartx = random(26,87);
 int8_t hearty = -14;
 
 uint8_t shipFrame = 0;
+uint8_t enemyFrame = 0;
 
 int8_t shield = 3;
 bool primed = false;
@@ -58,9 +59,6 @@ uint8_t fadeWidth;
 // score variables
 uint16_t score = 0;
 uint16_t highScore = 0;
-
-// Only need 5 for a uint16_t
-uint8_t digits[5];
 
 // Extract individual digits of a uint8_t
 template< size_t size > void extractDigits(uint8_t (&buffer)[size], uint8_t value)
@@ -143,19 +141,35 @@ const unsigned char PROGMEM enemy1[] =
 {
 // width, height,
 15, 30,
+
+//frame 0
 0x00, 0x40, 0x00, 0xe0, 0x00, 0x44, 0x00, 0xfe, 0x00, 0x44, 0x00, 0xe0, 0x00, 0x40, 0x00, 
 0x00, 0xfa, 0x00, 0xff, 0x00, 0x52, 0x00, 0x7f, 0x00, 0x52, 0x00, 0xff, 0x00, 0xfa, 0x00, 
 0x00, 0xc1, 0x78, 0xee, 0x84, 0xd4, 0x6e, 0x3f, 0x6e, 0xd4, 0x84, 0xee, 0x78, 0xc1, 0x00, 
 0x00, 0x03, 0x03, 0x06, 0x0b, 0x0d, 0x1d, 0x1d, 0x1d, 0x0d, 0x0b, 0x06, 0x03, 0x03, 0x00, 
+
+//frame 1
+0x00, 0x20, 0x00, 0xe8, 0x00, 0x20, 0x00, 0xfe, 0x00, 0x20, 0x00, 0xe8, 0x00, 0x20, 0x00, 
+0x00, 0xf9, 0x00, 0x6e, 0x00, 0x29, 0x00, 0x7f, 0x00, 0x29, 0x00, 0x6e, 0x00, 0xf9, 0x00, 
+0x00, 0xc0, 0x78, 0xee, 0x84, 0xd4, 0x6e, 0x3f, 0x6e, 0xd4, 0x84, 0xee, 0x78, 0xc0, 0x00, 
+0x00, 0x03, 0x03, 0x06, 0x0b, 0x09, 0x15, 0x15, 0x15, 0x09, 0x0b, 0x06, 0x03, 0x03, 0x00,
 };
 
 const unsigned char PROGMEM enemy1mask[] =
 {
 // width, height,
 //15, 30,
+
+//frame 0
 0x40, 0xe0, 0xe0, 0xf0, 0xe4, 0xee, 0xfe, 0xff, 0xfe, 0xee, 0xe4, 0xf0, 0xe0, 0xe0, 0x40, 
 0xfa, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f, 0xff, 0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfa, 
 0xc1, 0xff, 0xff, 0xff, 0xfe, 0xfe, 0xff, 0xff, 0xff, 0xfe, 0xfe, 0xff, 0xff, 0xff, 0xc1, 
+0x03, 0x07, 0x07, 0x0f, 0x1f, 0x1f, 0x3f, 0x3f, 0x3f, 0x1f, 0x1f, 0x0f, 0x07, 0x07, 0x03,
+
+//frame 1
+0x20, 0xf0, 0xe8, 0xfc, 0x28, 0xf0, 0xfe, 0xff, 0xfe, 0xf0, 0x28, 0xfc, 0x28, 0xf0, 0x20, 
+0xf9, 0xff, 0xf9, 0x6e, 0x29, 0x7f, 0xff, 0xff, 0xff, 0x7f, 0x29, 0x6e, 0xf9, 0xff, 0xf9, 
+0xc0, 0xf9, 0xfe, 0xff, 0xfe, 0xfe, 0xff, 0xff, 0xff, 0xfe, 0xfe, 0xff, 0xfe, 0xf9, 0xc0, 
 0x03, 0x07, 0x07, 0x0f, 0x1f, 0x1f, 0x3f, 0x3f, 0x3f, 0x1f, 0x1f, 0x0f, 0x07, 0x07, 0x03, 
 };
 
@@ -416,6 +430,7 @@ void pause() {
   arduboy.print(F("* PAUSE *"));
   sprite.drawExternalMask(10, 27, heart, heartmask, 0, 0);
   sprite.drawExternalMask(100, 27, heart, heartmask, 0, 0);
+  arduboy.setCursor(15, 37);
   // If 'B' button is pressed move back to gameplay
   if (arduboy.justPressed(B_BUTTON))  { state = 2; }
 
@@ -440,7 +455,6 @@ void doSplash() {
   else if (arduboy.justPressed(B_BUTTON)) {
     primed = false;
   }
-
   // Display a warning
   // Might want to change the position
   arduboy.setCursor(16, 1);
@@ -465,6 +479,9 @@ void doSplash() {
 
   // Gameover state
   void gameover() {
+  
+  // Only need 5 for a uint16_t
+  uint8_t digits[5];
   
   if (score > highScore) {
     highScore = score;
@@ -493,7 +510,7 @@ void doSplash() {
   arduboy.print(digits[i - 1]);
 
   // If 'A' button is pressed move to splash
-  if (arduboy.justPressed(A_BUTTON))  { state = 1; score = 0; }
+  if (arduboy.justPressed(A_BUTTON))  { state = 1; score = 0; enemy1y = -28; enemy2y = -28; }
   }
 
 void youarehit() {
@@ -517,6 +534,9 @@ sound.tone(NOTE_C5,100, NOTE_E4,100, NOTE_G3,100);
   // gameplay state
 void gameplay() {
   
+  // Only need 5 for a uint16_t
+  uint8_t digits[5];
+  
   uint16_t oldScore = score;
   
   if(ledTimer > 0 && arduboy.frameCount >= ledTimer)
@@ -534,32 +554,38 @@ void gameplay() {
   scrollingbackground();
   
   if(arduboy.everyXFrames(2)) // when running at 60fps
-{
+  {
   ++shipFrame; // Add 1
   shipFrame %= 2; // Remainder of dividing by 2
-}
+  }
+
+  if(arduboy.everyXFrames(5)) // when running at 60fps
+  {
+  ++enemyFrame; // Add 1
+  enemyFrame %= 2; // Remainder of dividing by 2
+  }
 
   // falling heart display
   sprite.drawExternalMask(heartx, hearty, heart, heartmask, 0, 0);
   
   // enemies appearing
-  sprite.drawExternalMask(enemy1x, enemy1y, enemy1, enemy1mask, 0, 0);
-  sprite.drawExternalMask(enemy2x, enemy2y, enemy1, enemy1mask, 0, 0);
+  Sprites::drawExternalMask(enemy1x, enemy1y, enemy1, enemy1mask, enemyFrame, enemyFrame);
+  Sprites::drawExternalMask(enemy2x, enemy2y, enemy1, enemy1mask, enemyFrame, enemyFrame);
   
   // resetting position for next enemy to appear
   enemy1y = enemy1y + speed;
   if( enemy1y > 64 ) {
-  enemy1y = -14; enemy1x = random(26,87);
+  enemy1y = -28; enemy1x = random(26,87);
   }
   enemy2y = enemy2y + speed;
   if( enemy1y > 64 ) {
-  enemy2y = -14; enemy2x = random(26,87);
+  enemy2y = -28; enemy2x = random(26,87);
   }
   
   // resetting position for next heart to fall
   hearty = hearty + speed + 1;
   if( hearty > 64 ) {
-  hearty = -14; heartx = random(26,87);
+  hearty = -28; heartx = random(26,87);
   }
   
   // here i display the main sprite
@@ -577,10 +603,10 @@ void gameplay() {
   arduboy.print(F("SHIELD:")); arduboy.setCursor(120, 1); arduboy.print(shield);
   
 // checking for collisions
-  Rect playerRect = { player.x + 5, player.y + 5, 12, 11 };
+  Rect playerRect = { player.x + 6, player.y + 4, 5, 5 };
   Rect enemy1Rect = { enemy1x + 5, enemy1y + 20, 10, 10 };
   Rect enemy2Rect = { enemy2x + 5, enemy2y + 20, 10, 10 };
-  Rect heartRect = { heartx + 5, hearty + 5, 11, 9 };
+  Rect heartRect = { heartx + 1, hearty + 1, 15, 13 };
   
   if(arduboy.collide(playerRect, heartRect)) {
   score = score + 5; ++heartcounter; sound.tone(NOTE_E3,80, NOTE_E4,80, NOTE_E5,80); hearty = -14; heartx = random(26,87);
@@ -591,7 +617,7 @@ void gameplay() {
   }
   
     if(arduboy.collide(playerRect, enemy2Rect)) {
-    --shield; youarehit(); sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100); enemy2y = -14; enemy2x = random(26,87);
+    --shield; youarehit(); sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100); enemy2y = -28; enemy2x = random(26,87);
     }
   
   // what is happening when we press buttons
@@ -618,7 +644,8 @@ void gameplay() {
             score = score + 10; sound.tone(NOTE_F4,100, NOTE_F3,100, NOTE_F2,100); enemy2y = -14; enemy2x = random(26,87);
             }
               if(arduboy.collide(laserRect, heartRect)) {
-              score = score - 10; sound.tone(NOTE_C4,100, NOTE_C4,100, NOTE_C4,100);
+              score = (score > 10) ? score - 10 : 0;  //check if score would be lower then 10, if not -10 pts
+              sound.tone(NOTE_C4,100, NOTE_C4,100, NOTE_C4,100);
               }
     }
     if(arduboy.justPressed(B_BUTTON)) {
@@ -626,11 +653,15 @@ void gameplay() {
     }
 
   // check if speed increase triggered
-  if(score >= 700 && oldScore < 700) { speed = 3; speedupdisplay(); }
+  if(score >= 900 && oldScore < 900) { speed = 3; speedupdisplay(); }
+  else if(score >= 700 && oldScore < 700) { speed = 1; speedupdisplay(); }
   else if(score >= 500 && oldScore < 500) { speed = 2; speedupdisplay(); }
   
   //check if you gain a life
   if(heartcounter >= 15) { ++shield; oneup(); heartcounter = 0; }
+  
+  //making sure score can't go lower then zero
+  if(score > 65535 ) { score = 0; }
   
   // check is game is over
   if(shield < 0) {
