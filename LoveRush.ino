@@ -523,15 +523,20 @@ void scrollingbackground2() {
   // Pause state
 void pause() {
   scrollingbackground2();
-  arduboy.setCursor(37, 30);
-  arduboy.print(F("* PAUSE *"));
+  arduboy.fillRect(0, 24, 128, 20, BLACK);
+  arduboy.drawLine(0, 25, 128, 25, WHITE);
+  arduboy.drawLine(0, 42, 128, 42, WHITE);
+  arduboy.drawLine(0, 45, 128, 45, BLACK);
+  arduboy.drawLine(0, 47, 128, 47, BLACK);
+  arduboy.setCursor(49, 31);
+  arduboy.print(F("PAUSE"));
   if(arduboy.everyXFrames(15)) // when running at 60fps
   {
   ++heartFrame; // Add 1
   if(heartFrame > 4) { heartFrame = 0; } // resets frame to 0 if greater then 4
   }
-  Sprites::drawExternalMask(10, 27, heart, heartmask, heartFrame, heartFrame);
-  Sprites::drawExternalMask(100, 27, heart, heartmask, heartFrame, heartFrame);
+  Sprites::drawExternalMask(28, 27, heart, heartmask, heartFrame, heartFrame);
+  Sprites::drawExternalMask(82, 27, heart, heartmask, heartFrame, heartFrame);
   arduboy.setCursor(15, 37);
   // If 'B' button is pressed move back to gameplay
   if (arduboy.justPressed(B_BUTTON))  { state = 2; }
@@ -599,23 +604,25 @@ void doSplash() {
     EEPROM.put(EEPROM_SCORE, highScore);
   }
   scrollingbackground();
-  arduboy.fillRect(0, 20, 128, 31, BLACK);
-  arduboy.drawLine(0, 21, 128, 21, WHITE);
-  arduboy.drawLine(0, 49, 128, 49, WHITE);
+  arduboy.fillRect(0, 16, 128, 31, BLACK);
+  arduboy.drawLine(0, 17, 128, 17, WHITE);
+  arduboy.drawLine(0, 45, 128, 45, WHITE);
+  arduboy.drawLine(0, 48, 128, 48, BLACK);
+  arduboy.drawLine(0, 50, 128, 50, BLACK);
   
-  arduboy.setCursor(37, 9);
+  arduboy.setCursor(37, 5);
   arduboy.print(F("GAME OVER"));
   
-  arduboy.setCursor(30, 27);
+  arduboy.setCursor(30, 23);
   arduboy.print(F("SCORE:"));
-  arduboy.setCursor(65, 27);
+  arduboy.setCursor(65, 23);
   extractDigits(digits, score);
   for(uint8_t i = 5; i > 0; --i)
   arduboy.print(digits[i - 1]);
   
-  arduboy.setCursor(15, 37);
+  arduboy.setCursor(15, 33);
   arduboy.print(F("HIGH SCORE:"));
-  arduboy.setCursor(81, 37);
+  arduboy.setCursor(81, 33);
   extractDigits(digits, highScore);
   for(uint8_t i = 5; i > 0; --i)
   arduboy.print(digits[i - 1]);
@@ -768,7 +775,7 @@ void gameplay() {
               }
     }
     if(arduboy.justPressed(B_BUTTON)) {
-        sound.tone(NOTE_C4,70, NOTE_E4,70, NOTE_G4,7); state = 4;
+        sound.tone(NOTE_C4,70, NOTE_D5,50, NOTE_E6,70); state = 4;
     }
 
   // check if speed increase triggered
