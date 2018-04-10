@@ -680,7 +680,7 @@ if(arduboy.everyXFrames(30)) // when running at 60fps
   ++explosionFrame; // Add 1
   if(explosionFrame > 4) { explosionFrame = 0; } // resets frame to 0 if greater then 4
   }
-  Sprites::drawExternalMask(expl1.x, expl1.y + 7, explosion, explosionmask, explosionFrame, explosionFrame);
+  Sprites::drawExternalMask(expl1.x, expl1.y, explosion, explosionmask, explosionFrame, explosionFrame);
   
 }  
 
@@ -703,7 +703,7 @@ ledTimerg = arduboy.frameCount + 30;
 }
 
 void speedupdisplay() {
-arduboy.digitalWriteRGB(GREEN_LED, RGB_ON);
+arduboy.digitalWriteRGB(BLUE_LED, RGB_ON);
 ledTimerg = arduboy.frameCount + 30;
 sound.tone(NOTE_G4,100, NOTE_E5,100, NOTE_C6,100);
 sound.tone(NOTE_C5,100, NOTE_E4,100, NOTE_G3,100);
@@ -749,62 +749,85 @@ void gameplay() {
   if(heartFrame > 3) { heartFrame = 0; } // resets frame to 0 if greater then 3
   }
 
-  // falling heart display
+// falling heart display
   Sprites::drawExternalMask(heartx, hearty, heart, heartmask, heartFrame, heartFrame);
   
-  // enemies appearing
+// enemies appearing
   Sprites::drawExternalMask(enemy1x, enemy1y, enemy1, enemy1mask, enemyFrame, enemyFrame);
   Sprites::drawExternalMask(enemy2x, enemy2y, enemy1, enemy1mask, enemyFrame, enemyFrame);
   
-  // resetting position for next enemy to appear
+// resetting position for next enemy to appear
   enemy1y = enemy1y + speed;
   if( enemy1y > 64 ) {
-  enemy1y = -28; enemy1x = random(26,87);
+  enemy1y = -28;
+  enemy1x = random(26,87);
   }
   enemy2y = enemy2y + speed;
   if( enemy1y > 64 ) {
-  enemy2y = -28; enemy2x = random(26,87);
+  enemy2y = -28;
+  enemy2x = random(26,87);
   }
   
-  // resetting position for next heart to fall
+// resetting position for next heart to fall
   hearty = hearty + speed + 1;
   if( hearty > 64 ) {
-  hearty = -28; heartx = random(26,87);
+  hearty = -28;
+  heartx = random(26,87);
   }
   
-  // here i display the main sprite
+// here i display the main sprite
   Sprites::drawExternalMask(player.x, player.y, player1, player1mask, shipFrame, shipFrame);
   
-  //Score rectangle area
+// Score area
   arduboy.fillRect(0, 0, 128, 10, BLACK);
   arduboy.setCursor(1, 1);
   arduboy.print(F("SCORE:")); arduboy.setCursor(37, 1);
   extractDigits(digits, score);
   for(uint8_t i = 5; i > 0; --i)
   arduboy.print(digits[i - 1]);
-  
   arduboy.setCursor(78, 1);
-  arduboy.print(F("SHIELD:")); arduboy.setCursor(120, 1); arduboy.print(shield);
+  arduboy.print(F("SHIELD:"));
+  arduboy.setCursor(120, 1);
+  arduboy.print(shield);
   
 // checking for collisions
   Rect playerRect = { player.x + 6, player.y + 4, 5, 5 };
   Rect enemy1Rect = { enemy1x + 5, enemy1y + 20, 10, 10 };
   Rect enemy2Rect = { enemy2x + 5, enemy2y + 20, 10, 10 };
   Rect heartRect = { heartx + 1, hearty + 1, 15, 13 };
-  
+
+// collision with a heart  
   if(arduboy.collide(playerRect, heartRect)) {
-  score = score + 5; ++heartcounter; sound.tone(NOTE_E3,80, NOTE_E4,80, NOTE_E5,80); hearty = -14; heartx = random(26,87);
+  score = score + 5;
+  ++heartcounter;
+  sound.tone(NOTE_E3,80, NOTE_E4,80, NOTE_E5,80);
+  hearty = -14;
+  heartx = random(26,87);
+  // check if you gain a life
+    if(heartcounter >= 15) {
+    ++shield; oneup(); heartcounter = 0;
+    }
   }
 
+// collision with enemy 1
   if(arduboy.collide(playerRect, enemy1Rect)) {
-  --shield; youarehit(); sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100); enemy1y = -14; enemy1x = random(26,87);
+  --shield;
+  youarehit();
+  sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100);
+  enemy1y = -14;
+  enemy1x = random(26,87);
   }
   
-    if(arduboy.collide(playerRect, enemy2Rect)) {
-    --shield; youarehit(); sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100); enemy2y = -28; enemy2x = random(26,87);
-    }
+// collision with enemy 2  
+  if(arduboy.collide(playerRect, enemy2Rect)) {
+  --shield;
+  youarehit();
+  sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100);
+  enemy2y = -28;
+  enemy2x = random(26,87);
+  }
   
-  // what is happening when we press buttons
+// what is happening when we press buttons
   if(arduboy.pressed(LEFT_BUTTON) && player.x > 18) {
         --player.x;
   }
@@ -822,29 +845,37 @@ void gameplay() {
         arduboy.drawLine(player.x + 8, player.y - 1, player.x + 8, 10, WHITE);
         Rect laserRect = { player.x + 8, player.y - 64, 2, 64 };
           if(arduboy.collide(laserRect, enemy1Rect)) {
-          score = score + 10; sound.tone(NOTE_F4,100, NOTE_F3,100, NOTE_F2,100); expl1.x = enemy1x; expl1.y = enemy1y; explosions(); enemy1y = -14; enemy1x = random(26,87);
+          score = score + 10;
+          sound.tone(NOTE_F4,100, NOTE_F3,100, NOTE_F2,100);
+          expl1.x = enemy1x;
+          expl1.y = enemy1y + 7;
+          explosions();
+          enemy1y = -14;
+          enemy1x = random(26,87);
           }
             if(arduboy.collide(laserRect, enemy2Rect)) {
-            score = score + 10; sound.tone(NOTE_F4,100, NOTE_F3,100, NOTE_F2,100);  expl1.x = enemy2x; expl1.y = enemy2y; explosions(); enemy2y = -14; enemy2x = random(26,87);
+            score = score + 10;
+            sound.tone(NOTE_F4,100, NOTE_F3,100, NOTE_F2,100);
+            expl1.x = enemy2x;
+            expl1.y = enemy2y + 7;
+            explosions(); enemy2y = -14;
+            enemy2x = random(26,87);
             }
               if(arduboy.collide(laserRect, heartRect)) {
               score = (score > 10) ? score - 10 : 0;  //check if score would be lower then 10, if not -10 pts
               sound.tone(NOTE_C4,100, NOTE_C4,100, NOTE_C4,100);
               }
     }
-    if(arduboy.justPressed(B_BUTTON)) {
-        sound.tone(NOTE_C4,70, NOTE_D5,50, NOTE_E6,70); state = 4;
-    }
+  if(arduboy.justPressed(B_BUTTON)) {
+  sound.tone(NOTE_C4,70, NOTE_D5,50, NOTE_E6,70); state = 4;
+  }
 
-  // check if speed increase triggered
+// check if speed increase triggered
   if(score >= 900 && oldScore < 900) { speed = 3; speedupdisplay(); }
   else if(score >= 700 && oldScore < 700) { speed = 1; speedupdisplay(); }
   else if(score >= 500 && oldScore < 500) { speed = 2; speedupdisplay(); }
   
-  //check if you gain a life
-  if(heartcounter >= 15) { ++shield; oneup(); heartcounter = 0; }
-  
-  //making sure score can't go lower then zero
+// making sure score can't go lower then zero
   if(score > 65535 ) { score = 0; }
   
 }
