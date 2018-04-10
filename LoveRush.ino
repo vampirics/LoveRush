@@ -856,9 +856,10 @@ void gameplay() {
             if(arduboy.collide(laserRect, enemy2Rect)) {
             score = score + 10;
             sound.tone(NOTE_F4,100, NOTE_F3,100, NOTE_F2,100);
-            expl1.x = enemy2x;
+            expl1.x = enemy2x + 2;
             expl1.y = enemy2y + 7;
-            explosions(); enemy2y = -14;
+            explosions();
+            enemy2y = -14;
             enemy2x = random(26,87);
             }
               if(arduboy.collide(laserRect, heartRect)) {
