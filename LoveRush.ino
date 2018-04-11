@@ -52,6 +52,7 @@ int8_t speed = 1;
 
 uint16_t ledTimer = 0;
 uint16_t ledTimerg = 0;
+uint16_t ledTimerb = 0;
 
 int8_t ee1 = 0;
 int8_t ee2 = 0;
@@ -598,7 +599,7 @@ void doSplash() {
   {
     highScore = 0;
     EEPROM.put(EEPROM_SCORE, highScore);
-    primed = false;
+    primed = false; sound.tone(NOTE_E5,50, NOTE_E6,50, NOTE_E7,50);
   }
   else if (arduboy.justPressed(B_BUTTON)) {
     primed = false;
@@ -685,6 +686,7 @@ if(arduboy.everyXFrames(30)) // when running at 60fps
 }  
 
 void youarehit() {
+sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100);
 arduboy.digitalWriteRGB(RED_LED, RGB_ON);
 ledTimer = arduboy.frameCount + 30;
   // check is game is over
@@ -693,6 +695,7 @@ ledTimer = arduboy.frameCount + 30;
   state = 3;
   arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
   arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
+  arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off LEDS
   }
 }
 
@@ -704,7 +707,7 @@ ledTimerg = arduboy.frameCount + 30;
 
 void speedupdisplay() {
 arduboy.digitalWriteRGB(BLUE_LED, RGB_ON);
-ledTimerg = arduboy.frameCount + 30;
+ledTimerb = arduboy.frameCount + 30;
 sound.tone(NOTE_G4,100, NOTE_E5,100, NOTE_C6,100);
 sound.tone(NOTE_C5,100, NOTE_E4,100, NOTE_G3,100);
 }
@@ -726,6 +729,12 @@ void gameplay() {
     {
     arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF);
     ledTimerg = 0;
+    }
+
+    if(ledTimerb > 0 && arduboy.frameCount >= ledTimerb)
+    {
+    arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
+    ledTimerb = 0;
     }
     
   // let's call my scrolling background
@@ -792,8 +801,8 @@ void gameplay() {
   
 // checking for collisions
   Rect playerRect = { player.x + 6, player.y + 4, 5, 5 };
-  Rect enemy1Rect = { enemy1x + 5, enemy1y + 20, 10, 10 };
-  Rect enemy2Rect = { enemy2x + 5, enemy2y + 20, 10, 10 };
+  Rect enemy1Rect = { enemy1x + 1, enemy1y + 20, 13, 13 };
+  Rect enemy2Rect = { enemy2x + 1, enemy2y + 20, 13, 13 };
   Rect heartRect = { heartx + 1, hearty + 1, 15, 13 };
 
 // collision with a heart  
@@ -813,7 +822,6 @@ void gameplay() {
   if(arduboy.collide(playerRect, enemy1Rect)) {
   --shield;
   youarehit();
-  sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100);
   enemy1y = -14;
   enemy1x = random(26,87);
   }
@@ -822,7 +830,6 @@ void gameplay() {
   if(arduboy.collide(playerRect, enemy2Rect)) {
   --shield;
   youarehit();
-  sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100);
   enemy2y = -28;
   enemy2x = random(26,87);
   }
@@ -841,12 +848,12 @@ void gameplay() {
         ++player.y;
     }
     if(arduboy.justPressed(A_BUTTON)) {
-        sound.tone(NOTE_E4,50, NOTE_D4,100, NOTE_E4,50);
+        sound.tone(NOTE_C5,50, NOTE_C3,100, NOTE_C2,200);
         arduboy.drawLine(player.x + 8, player.y - 1, player.x + 8, 10, WHITE);
         Rect laserRect = { player.x + 8, player.y - 64, 2, 64 };
           if(arduboy.collide(laserRect, enemy1Rect)) {
           score = score + 10;
-          sound.tone(NOTE_F4,100, NOTE_F3,100, NOTE_F2,100);
+          sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
           expl1.x = enemy1x;
           expl1.y = enemy1y + 7;
           explosions();
@@ -855,7 +862,7 @@ void gameplay() {
           }
             if(arduboy.collide(laserRect, enemy2Rect)) {
             score = score + 10;
-            sound.tone(NOTE_F4,100, NOTE_F3,100, NOTE_F2,100);
+            sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
             expl1.x = enemy2x + 2;
             expl1.y = enemy2y + 7;
             explosions();
@@ -863,7 +870,8 @@ void gameplay() {
             enemy2x = random(26,87);
             }
               if(arduboy.collide(laserRect, heartRect)) {
-              score = (score > 10) ? score - 10 : 0;  //check if score would be lower then 10, if not -10 pts
+              //check if score would be lower then 10, if not -10 pts
+              score = (score > 10) ? score - 10 : 0;
               sound.tone(NOTE_C4,100, NOTE_C4,100, NOTE_C4,100);
               }
     }
