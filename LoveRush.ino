@@ -48,11 +48,14 @@ uint8_t explosionFrame = 0;
 int8_t shield = 3;
 bool primed = false;
 
+bool hit = false;
+
 int8_t speed = 1;
 
 uint16_t ledTimer = 0;
 uint16_t ledTimerg = 0;
 uint16_t ledTimerb = 0;
+uint16_t flashtimer = 0;
 
 int8_t ee1 = 0;
 int8_t ee2 = 0;
@@ -675,24 +678,35 @@ void doSplash() {
   if (arduboy.justPressed(B_BUTTON))  { state = 1; score = 0; enemy1y = -28; enemy2y = -28; }
   }
 
-void explosions() {
-if(arduboy.everyXFrames(30)) // when running at 60fps
+void explosions()
+{
+  if(hit)
   {
-  ++explosionFrame; // Add 1
-  if(explosionFrame > 4) { explosionFrame = 0; } // resets frame to 0 if greater then 4
+    if(arduboy.everyXFrames(5)) // when running at 60fps
+    {
+      ++explosionFrame;
+      if(explosionFrame > 3)
+      {
+        // resets frame to 0 and turn off explosion
+        explosionFrame = 0;
+        hit = false;
+      }
+    }
+    Sprites::drawExternalMask(expl1.x, expl1.y, explosion, explosionmask, explosionFrame, explosionFrame);
   }
-  Sprites::drawExternalMask(expl1.x, expl1.y, explosion, explosionmask, explosionFrame, explosionFrame);
-  
-}  
+}
 
 void youarehit() {
 sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100);
+arduboy.invert(true);
 arduboy.digitalWriteRGB(RED_LED, RGB_ON);
+flashtimer = arduboy.frameCount + 2; // speed to the screen flash when hit
 ledTimer = arduboy.frameCount + 30;
   // check is game is over
   if(shield < 0) {
   speed = 1;
   state = 3;
+  arduboy.invert(false); // display the screen no inverted
   arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
   arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
   arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off LEDS
@@ -736,6 +750,11 @@ void gameplay() {
     arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
     ledTimerb = 0;
     }
+        if(flashtimer > 0 && arduboy.frameCount >= flashtimer)
+        {
+        arduboy.invert(false);
+        flashtimer = 0;
+        }
     
   // let's call my scrolling background
   scrollingbackground();
@@ -757,6 +776,9 @@ void gameplay() {
   ++heartFrame; // Add 1
   if(heartFrame > 3) { heartFrame = 0; } // resets frame to 0 if greater then 3
   }
+  
+// display explosions if true
+  explosions();
 
 // falling heart display
   Sprites::drawExternalMask(heartx, hearty, heart, heartmask, heartFrame, heartFrame);
@@ -789,15 +811,17 @@ void gameplay() {
   
 // Score area
   arduboy.fillRect(0, 0, 128, 10, BLACK);
-  arduboy.setCursor(1, 1);
-  arduboy.print(F("SCORE:")); arduboy.setCursor(37, 1);
+  arduboy.setCursor(1, 0);
+  arduboy.print(F("SCORE:")); arduboy.setCursor(37, 0);
   extractDigits(digits, score);
   for(uint8_t i = 5; i > 0; --i)
   arduboy.print(digits[i - 1]);
-  arduboy.setCursor(78, 1);
+  arduboy.setCursor(78, 0);
   arduboy.print(F("SHIELD:"));
-  arduboy.setCursor(120, 1);
+  arduboy.setCursor(120, 0);
   arduboy.print(shield);
+  arduboy.drawLine(0, 9, 128, 9, WHITE);
+  arduboy.drawLine(0, 10, 128, 10, BLACK);
   
 // checking for collisions
   Rect playerRect = { player.x + 6, player.y + 4, 5, 5 };
@@ -855,8 +879,8 @@ void gameplay() {
           score = score + 10;
           sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
           expl1.x = enemy1x;
-          expl1.y = enemy1y + 7;
-          explosions();
+          expl1.y = enemy1y + 12;
+          hit = true;
           enemy1y = -14;
           enemy1x = random(26,87);
           }
@@ -864,8 +888,8 @@ void gameplay() {
             score = score + 10;
             sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
             expl1.x = enemy2x + 2;
-            expl1.y = enemy2y + 7;
-            explosions();
+            expl1.y = enemy2y + 12;
+            hit = true;
             enemy2y = -14;
             enemy2x = random(26,87);
             }
@@ -883,8 +907,5 @@ void gameplay() {
   if(score >= 900 && oldScore < 900) { speed = 3; speedupdisplay(); }
   else if(score >= 700 && oldScore < 700) { speed = 1; speedupdisplay(); }
   else if(score >= 500 && oldScore < 500) { speed = 2; speedupdisplay(); }
-  
-// making sure score can't go lower then zero
-  if(score > 65535 ) { score = 0; }
   
 }
