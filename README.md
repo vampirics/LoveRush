@@ -13,6 +13,7 @@ Game Features:
 - Press A to shoot
 - Press B to pause the game
 - Catching heart gives you 5pts
+- You get 1 additional shield every 15 hearts
 - Shooting a heart is -10pts
 - Shooting angry faces gives you 10pts
-- A collision with an angry face is -1 life (you have 4 lives total)
+- A collision with an angry face is -1 shield (you have 4 shields at the start total)
