@@ -19,16 +19,18 @@ struct Position {
 Position player = { 54, 40 };
 Position cloudl = { 0, 0 };
 Position cloudr = { 103, 0 };
+Position en1 = { 0, 0 };
+Position en2 = { 0, 0 };
 Position expl1 = { 0, 0 };
 Position expl2 = { 0, 0 };
 Position heartminus = { 0, 0 };
-Position fuelpower = { 0, 0 };
+Position fuelpower = { 50, 0 };
 
-uint8_t state = 0;
-
-// Powerup Counter variable
+// Globals
 const uint8_t FPS = 60;
 uint8_t powerUpCounter = 0;
+
+uint8_t state = 0;
 
 // variable for Cloud backdrop
 int8_t backdropx = -3;
@@ -50,6 +52,7 @@ uint8_t heartFrame = 0;
 uint8_t heartminusFrame = 0;
 uint8_t explosionFrame = 0;
 uint8_t fuelFrame = 0;
+uint8_t powerup1Frame = 0;
 
 int8_t shield = 3;
 bool primed = false;
@@ -482,17 +485,28 @@ const unsigned char PROGMEM lowfuelmask[] =
 const unsigned char PROGMEM fuelpowerup[] =
 {
 // width, height,
-18, 13,
-0x00, 0x10, 0x08, 0xdc, 0x0e, 0xfc, 0x02, 0xfa, 0x2a, 0x2a, 0x0a, 0x02, 0xfc, 0x0e, 0xdc, 0x08, 0x10, 0x00, 
-0x00, 0x00, 0x00, 0x0b, 0x05, 0x07, 0x06, 0x02, 0x02, 0x02, 0x02, 0x06, 0x07, 0x05, 0x0b, 0x00, 0x00, 0x00, 
+20, 13,
+// frame 0
+0x20, 0x50, 0xa8, 0x54, 0xba, 0x1d, 0xfa, 0x05, 0xf5, 0x55, 0x55, 0x15, 0x05, 0xfa, 0x1d, 0xba, 0x54, 0xa8, 0x50, 0x20, 
+0x00, 0x00, 0x00, 0x00, 0x07, 0x08, 0x17, 0x14, 0x15, 0x14, 0x14, 0x14, 0x14, 0x17, 0x08, 0x07, 0x00, 0x00, 0x00, 0x00, 
+
+// frame 1
+0x0c, 0x12, 0x2a, 0x2d, 0xdd, 0x1d, 0xfa, 0x05, 0xf5, 0x55, 0x55, 0x15, 0x05, 0xfa, 0x1d, 0xdd, 0x2d, 0x2a, 0x12, 0x0c, 
+0x00, 0x00, 0x00, 0x00, 0x07, 0x08, 0x17, 0x14, 0x15, 0x14, 0x14, 0x14, 0x14, 0x17, 0x08, 0x07, 0x00, 0x00, 0x00, 0x00, 
 };
 
 const unsigned char PROGMEM fuelpowerupmask[] =
 {
 // width, height,
-//18, 13,
-0x10, 0x38, 0xdc, 0xfe, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xfe, 0xdc, 0x38, 0x10, 
-0x00, 0x00, 0x0b, 0x1f, 0x0f, 0x0f, 0x0f, 0x07, 0x07, 0x07, 0x07, 0x0f, 0x0f, 0x0f, 0x1f, 0x0b, 0x00, 0x00, 
+//20, 13,
+
+// frame 0
+0x20, 0x70, 0xf8, 0x7c, 0xfe, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xfe, 0x7c, 0xf8, 0x70, 0x20, 
+0x00, 0x00, 0x00, 0x00, 0x07, 0x0f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x0f, 0x07, 0x00, 0x00, 0x00, 0x00, 
+
+// frame 1
+0x0c, 0x1e, 0x3e, 0x3f, 0xff, 0xff, 0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe, 0xff, 0xff, 0x3f, 0x3e, 0x1e, 0x0c, 
+0x00, 0x00, 0x00, 0x00, 0x07, 0x0f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x0f, 0x07, 0x00, 0x00, 0x00, 0x00, 
 };
 
 void initEEPROM() {
@@ -764,7 +778,7 @@ void doSplash() {
   sprite.drawExternalMask(46, 52, pressb, pressbmask, 0, 0);
 
   // If 'A' button is pressed move to splash
-  if (arduboy.justPressed(B_BUTTON))  { fueltimer = 0; state = 1; score = 0; enemy1y = -28; enemy2y = -28; }
+  if (arduboy.justPressed(B_BUTTON))  { fueltimer = 0; state = 1; score = 0; enemy1y = -28; enemy2y = -28; fuelpower.x = 0; fuelpower.y = -28; }
   }
 
 void explosions()
@@ -886,10 +900,10 @@ void gameplay() {
   if(heartFrame > 3) { heartFrame = 0; } // resets frame to 0 if greater then 3
   }
   
-  if(arduboy.everyXFrames(15)) // when running at 60fps
+  if(arduboy.everyXFrames(30)) // when running at 60fps
   {
   ++fuelFrame; // Add 1
-  if(fuelFrame > 1) { fuelFrame = 0; } // resets every .25 seconds
+  if(fuelFrame > 1) { fuelFrame = 0; } // resets every .5 seconds
   }
 
 // Fuel timer count
@@ -904,23 +918,6 @@ void gameplay() {
 // display a heart being shot if true
 
   heartshot();
-  
-  // calling powerup if conditions met
-  if(arduboy.everyXFrames(FPS))
-  {
-  if(powerUpCounter > 0)
-  {
-    --powerUpCounter;
-  }
-  else
-  {
-    // Power up spawn code goes here
-
-    Sprites::drawExternalMask(fuelpower.x, fuelpower.y, fuelpowerup, fuelpowerupmask, 0, 0);
-    // New power up at random interval between 10 and 20 seconds
-    powerUpCounter = random(10, 20);
-  }
-}
 
 // falling heart display
   Sprites::drawExternalMask(heartx, hearty, heart, heartmask, heartFrame, heartFrame);
@@ -948,14 +945,39 @@ void gameplay() {
   heartx = random(26,87);
   }
   
-    ++fuelpower.y;
-    if( fuelpower.y > 64 ) {
-    fuelpower.y = -28;
-    fuelpower.x = random(26,87);
-    }
+  ++fuelpower.y;
+
   
 // here i display the main sprite
   Sprites::drawExternalMask(player.x, player.y, player1, player1mask, shipFrame, shipFrame);
+  
+// calling powerup if conditions met
+if(arduboy.everyXFrames(FPS))
+{
+  if(powerUpCounter > 0)
+  {
+    --powerUpCounter;
+  }
+  else
+  {
+    if(fuelpower.y > 64)
+    {
+      // Power up spawn code goes here
+      fuelpower.x = random(26, 87);
+      fuelpower.y = -28;
+
+      // New power up at random interval between 30 and 60 seconds
+      powerUpCounter = random(30, 60);
+    }
+  }
+}
+if(arduboy.everyXFrames(15)) // when running at 60fps
+  {
+  ++powerup1Frame; // Add 1
+  if(powerup1Frame > 1) { powerup1Frame = 0; } // resets frame to 0 if greater then 4
+  }
+Sprites::drawExternalMask(fuelpower.x, fuelpower.y, fuelpowerup, fuelpowerupmask, powerup1Frame, powerup1Frame);
+
   
 // Score area
   arduboy.fillRect(0, 0, 128, 10, BLACK);
@@ -983,11 +1005,14 @@ void gameplay() {
       // Fuel Low Warning if needed
       if(fuelcount > 30) {
         if(fuelFrame < 1) {
-        Sprites::drawExternalMask(player.x - 4, player.y + 5, lowfuel, lowfuelmask, 0, 0);
+        Sprites::drawExternalMask(player.x - 4, player.y + 6, lowfuel, lowfuelmask, 0, 0);
         }
       }
         // GameOver if out of fuel
         if(fuelcount > 40) {
+        arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
+        arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
+        arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off LEDS
         state = 3;
         }
   
@@ -996,6 +1021,15 @@ void gameplay() {
   Rect enemy1Rect = { enemy1x + 1, enemy1y + 20, 13, 13 };
   Rect enemy2Rect = { enemy2x + 1, enemy2y + 20, 13, 13 };
   Rect heartRect = { heartx + 1, hearty + 1, 15, 13 };
+  Rect fuelpowRect = { fuelpower.x + 3, fuelpower.y + 3, 12, 12 };
+  
+  // collision with powerup fuel
+  if(arduboy.collide(playerRect, fuelpowRect)) {
+  fuelcount = (fuelcount > 4) ? fuelcount - 4 : 0;
+  sound.tone(NOTE_E6,100, NOTE_E7,100, NOTE_E8,100);
+  fuelpower.y = -28;
+  fuelpower.x = random(26,87);
+  }
 
 // collision with a heart  
   if(arduboy.collide(playerRect, heartRect)) {
@@ -1047,8 +1081,7 @@ void gameplay() {
         Rect laserRect = { player.x + 8, player.y - 64, 2, 64 };
           if(arduboy.collide(laserRect, enemy1Rect)) {
           score = score + 10;
-          --fuelcount;
-          --fuelcount;
+          fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
           sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
           expl1.x = enemy1x;
           expl1.y = enemy1y + 12;
@@ -1058,8 +1091,7 @@ void gameplay() {
           }
             if(arduboy.collide(laserRect, enemy2Rect)) {
             score = score + 10;
-            --fuelcount;
-            --fuelcount;
+            fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
             sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
             expl1.x = enemy2x + 2;
             expl1.y = enemy2y + 12;
@@ -1083,8 +1115,8 @@ void gameplay() {
   }
 
 // check if speed increase triggered
-  //if(score >= 900 && oldScore < 900) { speed = 2; speedupdisplay(); }
- // else if(score >= 700 && oldScore < 700) { speed = 1; speedupdisplay(); }
+  //if(score >= 900 && oldScore < 900) { speed = 3; speedupdisplay(); }
+  //else if(score >= 700 && oldScore < 700) { speed = 1; speedupdisplay(); }
   //else if(score >= 500 && oldScore < 500) { speed = 2; speedupdisplay(); }
   
 }
