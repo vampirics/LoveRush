@@ -59,6 +59,7 @@ bool primed = false;
 
 bool hit = false;
 bool hearthit = false;
+bool gotpowerup = false;
 
 int8_t speed = 1;
 uint16_t fueltimer = 0;
@@ -778,8 +779,17 @@ void doSplash() {
   sprite.drawExternalMask(46, 52, pressb, pressbmask, 0, 0);
 
   // If 'A' button is pressed move to splash
-  if (arduboy.justPressed(B_BUTTON))  { fueltimer = 0; state = 1; score = 0; enemy1y = -28; enemy2y = -28; fuelpower.x = 0; fuelpower.y = -28; }
+  if (arduboy.justPressed(B_BUTTON))  {
+    fueltimer = 0;
+    state = 1;
+    score = 0;
+    enemy1y = -28;
+    enemy2y = -28;
+    fuelpower.y = -28;
+    hearty = -28;
+    heartx = random(26,87);
   }
+}
 
 void explosions()
 {
@@ -911,7 +921,8 @@ void gameplay() {
   {
   fuelcount = fuelcount + 2; // Add 2
   }
-  
+
+    
 // display explosions if true
   explosions();
   
@@ -944,8 +955,6 @@ void gameplay() {
   hearty = -28;
   heartx = random(26,87);
   }
-  
-  ++fuelpower.y;
 
   
 // here i display the main sprite
@@ -954,13 +963,13 @@ void gameplay() {
 // calling powerup if conditions met
 if(arduboy.everyXFrames(FPS))
 {
-  if(powerUpCounter > 0)
+  if(fuelpower.y > 64)
   {
-    --powerUpCounter;
-  }
-  else
-  {
-    if(fuelpower.y > 64)
+    if(powerUpCounter > 0)
+    {
+      --powerUpCounter;
+    }
+    else
     {
       // Power up spawn code goes here
       fuelpower.x = random(26, 87);
@@ -970,14 +979,22 @@ if(arduboy.everyXFrames(FPS))
       powerUpCounter = random(30, 60);
     }
   }
-}
-if(arduboy.everyXFrames(15)) // when running at 60fps
+  else
   {
+    // Move ++fuelpower.y; from where it currently is to here
+  // This will prevent it moving after it goes offscreen
+    ++fuelpower.y;
+  }
+}
+
+if(arduboy.everyXFrames(15)) // when running at 60fps
+{
   ++powerup1Frame; // Add 1
   if(powerup1Frame > 1) { powerup1Frame = 0; } // resets frame to 0 if greater then 4
-  }
-Sprites::drawExternalMask(fuelpower.x, fuelpower.y, fuelpowerup, fuelpowerupmask, powerup1Frame, powerup1Frame);
+}
 
+Sprites::drawExternalMask(fuelpower.x, fuelpower.y, fuelpowerup, fuelpowerupmask, powerup1Frame, powerup1Frame);
+  
   
 // Score area
   arduboy.fillRect(0, 0, 128, 10, BLACK);
@@ -1029,6 +1046,7 @@ Sprites::drawExternalMask(fuelpower.x, fuelpower.y, fuelpowerup, fuelpowerupmask
   sound.tone(NOTE_E6,100, NOTE_E7,100, NOTE_E8,100);
   fuelpower.y = -28;
   fuelpower.x = random(26,87);
+  gotpowerup = true;
   }
 
 // collision with a heart  
@@ -1115,8 +1133,8 @@ Sprites::drawExternalMask(fuelpower.x, fuelpower.y, fuelpowerup, fuelpowerupmask
   }
 
 // check if speed increase triggered
-  //if(score >= 900 && oldScore < 900) { speed = 3; speedupdisplay(); }
-  //else if(score >= 700 && oldScore < 700) { speed = 1; speedupdisplay(); }
-  //else if(score >= 500 && oldScore < 500) { speed = 2; speedupdisplay(); }
+  if(score >= 1500 && oldScore < 1500) { speed = 2; speedupdisplay(); }
+  else if(score >= 1000 && oldScore < 1000) { speed = 1; speedupdisplay(); }
+  else if(score >= 500 && oldScore < 500) { speed = 2; speedupdisplay(); }
   
 }
