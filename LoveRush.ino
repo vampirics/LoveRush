@@ -934,13 +934,23 @@ void doSplash()
 
 }
 
-  // Gameover state
-  void gameover() {
+void lightsoff()
+{
+  arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
+  arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
+  arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off LEDS
+}
+
+// Gameover state
+void gameover()
+{
+  lightsoff();
   
   // Only need 5 for a uint16_t
   uint8_t digits[5];
   
-  if (score > highScore) {
+  if (score > highScore)
+  {
     highScore = score;
     EEPROM.put(EEPROM_SCORE, highScore);
   }
@@ -1028,9 +1038,6 @@ void youarehit()
     speed = 1;
     state = 3;
     arduboy.invert(false); // display the screen no inverted
-    arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
-    arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
-    arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off LEDS
   }
 }
 
@@ -1205,9 +1212,6 @@ void outoffuel()
   // GameOver if out of fuel
   if(fuelcount > 40)
   {
-    arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
-    arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
-    arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off LEDS
     state = 3;
   }
 }
