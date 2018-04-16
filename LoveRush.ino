@@ -510,17 +510,20 @@ const unsigned char PROGMEM fuelpowerupmask[] =
 0x00, 0x00, 0x00, 0x00, 0x07, 0x0f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x1f, 0x0f, 0x07, 0x00, 0x00, 0x00, 0x00, 
 };
 
-void initEEPROM() {
+void initEEPROM()
+{
   char c1 = EEPROM.read(EEPROM_START_C1);
   char c2 = EEPROM.read(EEPROM_START_C2);
   
-  if (c1 != 'L' || c2 != 'Z') {
+  if (c1 != 'L' || c2 != 'Z')
+  {
     highScore = 0;
     EEPROM.update(EEPROM_START_C1, 'L');
     EEPROM.update(EEPROM_START_C2, 'Z');
     EEPROM.update(EEPROM_SCORE, highScore);
   }
-  else {
+  else
+  {
     EEPROM.get(EEPROM_SCORE, highScore);
   }
 }
@@ -575,14 +578,14 @@ bool fadeOut()
   
 }
 
-void setup() {
+void setup()
+{
   // things that needs to be ran once
   arduboy.boot();
   arduboy.display();
   arduboy.flashlight();
   arduboy.systemButtons();
   arduboy.audio.begin();
-  // no call to bootLogo
   arduboy.clear();
   initEEPROM();
   
@@ -779,7 +782,8 @@ void vsboot()
 }
 
   // scrolling background1 function
-void scrollingbackground() {
+void scrollingbackground()
+{
   arduboy.drawBitmap(backdropx, backdropy, cloudbackdrop, 128, 64, WHITE);
   arduboy.drawBitmap(backdropx, backdropy - 64, cloudbackdrop, 128, 64, WHITE);
   sprite.drawExternalMask(cloudl.x, cloudl.y, cloudborderl, cloudborderlmask, 0, 0);
@@ -879,7 +883,6 @@ void resetfornewgame()
   heartx = random(26,87);
 }
 
-  // Splashscreen state
 void doSplash()
 {
   // Reset highScore value option
