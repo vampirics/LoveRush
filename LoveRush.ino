@@ -590,9 +590,10 @@ void setup() {
   arduboy.setFrameRate(60);
 }
 
-void loop() {
-    // Wait for the next frame
-   if (!(arduboy.nextFrame())) return;
+void loop()
+{
+  // Wait for the next frame
+  if (!(arduboy.nextFrame())) return;
   
   arduboy.pollButtons();
   arduboy.clear();
@@ -616,29 +617,29 @@ void handleCollisions()
 // collision with a heart  
   if(arduboy.collide(playerRect, heartRect))
   {
-  score = score + 5;
-  fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
-  ++heartcounter;
-  sound.tone(NOTE_E3,80, NOTE_E4,80, NOTE_E5,80);
-  hearty = -14;
-  heartx = random(26,87);
-  // check if you gain a shield
-    if(heartcounter >= 15)
-    {
-    ++shield; oneup();
-    fuelcount = (fuelcount > 10) ? fuelcount - 10 : 0;
-    heartcounter = 0;
-    }
+    score = score + 5;
+    fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
+    ++heartcounter;
+    sound.tone(NOTE_E3,80, NOTE_E4,80, NOTE_E5,80);
+    hearty = -14;
+    heartx = random(26,87);
+    // check if you gain a shield
+      if(heartcounter >= 15)
+      {
+        ++shield; oneup();
+        fuelcount = (fuelcount > 10) ? fuelcount - 10 : 0;
+        heartcounter = 0;
+      }
   }
 
 // collision with enemy 1
   if(arduboy.collide(playerRect, enemy1Rect))
   {
-  --shield;
-  fuelcount = fuelcount + 6;
+    --shield;
+    fuelcount = fuelcount + 6;
     if ( fuelcount > 40 )
     {
-    fuelcount = 40;
+      fuelcount = 40;
     }
   youarehit();
   enemy1y = -14;
@@ -648,11 +649,11 @@ void handleCollisions()
 // collision with enemy 2  
   if(arduboy.collide(playerRect, enemy2Rect))
   {
-  --shield;
-  fuelcount = fuelcount + 6;
+    --shield;
+    fuelcount = fuelcount + 6;
     if ( fuelcount > 40 )
     {
-    fuelcount = 40;
+      fuelcount = 40;
     }
   youarehit();
   enemy2y = -28;
@@ -669,25 +670,25 @@ void handleCollisions()
   
 // collisions with the laser  
   if(arduboy.justPressed(A_BUTTON))
-        {
-        sound.tone(NOTE_C5,50, NOTE_C3,100, NOTE_C2,200);
-        arduboy.drawLine(player.x + 6, player.y - 1, player.x + 6, 10, WHITE);
-        arduboy.drawLine(player.x + 8, player.y - 1, player.x + 8, 10, WHITE);
-        arduboy.drawLine(player.x + 10, player.y - 1, player.x + 10, 10, WHITE);
-        Rect laserRect = { player.x + 8, player.y - 64, 2, 64 };
-          if(arduboy.collide(laserRect, enemy1Rect))
+  {
+    sound.tone(NOTE_C5,50, NOTE_C3,100, NOTE_C2,200);
+    arduboy.drawLine(player.x + 6, player.y - 1, player.x + 6, 10, WHITE);
+    arduboy.drawLine(player.x + 8, player.y - 1, player.x + 8, 10, WHITE);
+    arduboy.drawLine(player.x + 10, player.y - 1, player.x + 10, 10, WHITE);
+    Rect laserRect = { player.x + 8, player.y - 64, 2, 64 };
+      if(arduboy.collide(laserRect, enemy1Rect))
+      {
+        score = score + 10;
+        fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
+        sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
+        expl1.x = enemy1x;
+        expl1.y = enemy1y + 12;
+        hit = true;
+        enemy1y = -14;
+        enemy1x = random(26,87);
+      }
+          if(arduboy.collide(laserRect, enemy2Rect))
           {
-          score = score + 10;
-          fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
-          sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
-          expl1.x = enemy1x;
-          expl1.y = enemy1y + 12;
-          hit = true;
-          enemy1y = -14;
-          enemy1x = random(26,87);
-          }
-            if(arduboy.collide(laserRect, enemy2Rect))
-            {
             score = score + 10;
             fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
             sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
@@ -696,9 +697,9 @@ void handleCollisions()
             hit = true;
             enemy2y = -14;
             enemy2x = random(26,87);
-            }
-              if(arduboy.collide(laserRect, heartRect))
-              {
+          }
+            if(arduboy.collide(laserRect, heartRect))
+            {
               //check if score would be lower then 10, if not -10 pts
               score = (score > 10) ? score - 10 : 0;
               sound.tone(NOTE_C4,100, NOTE_C4,100, NOTE_C4,100);
@@ -707,7 +708,7 @@ void handleCollisions()
               hearthit = true;
               hearty = -14;
               heartx = random(26,87);
-              }
+            }
   }
 }
 
@@ -765,7 +766,8 @@ void updatePowerup()
   }
 }
 
-void vsboot() {
+void vsboot()
+{
   // Vsoft logo display
   arduboy.drawBitmap(0, 0, bootlogo, 128, 64, WHITE);
   if(fadeOut())
@@ -791,17 +793,17 @@ void scrollingbackground() {
   ++backdropy;
   if( backdropy > 64 )
   {
-  backdropy = 0;
+    backdropy = 0;
   }
   cloudl.y = cloudl.y +2;
   cloudr.y = cloudr.y +2;
   if( cloudl.y > 64 )
   {
-  cloudl.y = 0;
+    cloudl.y = 0;
   }
   if( cloudr.y > 64 )
   {
-  cloudr.y = 0;
+    cloudr.y = 0;
   }
 }
 
@@ -820,17 +822,17 @@ void scrollingbackground2()
   ++backdropy;
   if( backdropy > 64 )
   {
-  backdropy = 0;
+    backdropy = 0;
   }
   cloudl.y = cloudl.y +2;
   cloudr.y = cloudr.y +2;
   if( cloudl.y > 64 )
   {
-  cloudl.y = 0;
+    cloudl.y = 0;
   }
   if( cloudr.y > 64 )
   {
-  cloudr.y = 0;
+    cloudr.y = 0;
   }
 }
 
@@ -850,61 +852,82 @@ void pause()
     ++heartFrame; // Add 1
     if(heartFrame > 4)
     {
-    heartFrame = 0; // resets frame to 0 if greater then 4
+      heartFrame = 0; // resets frame to 0 if greater then 4
     }
   }
   Sprites::drawExternalMask(28, 27, heart, heartmask, heartFrame, heartFrame);
   Sprites::drawExternalMask(82, 27, heart, heartmask, heartFrame, heartFrame);
   arduboy.setCursor(15, 37);
   // If 'B' button is pressed move back to gameplay
-  if (arduboy.justPressed(B_BUTTON))  { state = 2; }
+  if (arduboy.justPressed(B_BUTTON))
+  {
+    state = 2;
+  }
 
 }
 
+void resetfornewgame()
+{
+  score = 0;
+  shield = 3;
+  fuelcount = 0;
+  fueltimer = 0;
+  enemy1y = -28;
+  enemy2y = -28;
+  fuelpower.y = -28;
+  hearty = -28;
+  heartx = random(26,87);
+}
+
   // Splashscreen state
-void doSplash() {
+void doSplash()
+{
   // Reset highScore value option
-  if(!primed) {
-  if (arduboy.justPressed(B_BUTTON))
+  if(!primed)
   {
-    primed = true;
+    if (arduboy.justPressed(B_BUTTON))
+    {
+      primed = true;
+    }
   }
-  }
-  else {
-  if (arduboy.justPressed(DOWN_BUTTON))
+  else
   {
-    highScore = 0;
-    EEPROM.put(EEPROM_SCORE, highScore);
-    primed = false; sound.tone(NOTE_E5,50, NOTE_E6,50, NOTE_E7,50);
-  }
-  else if (arduboy.justPressed(B_BUTTON)) {
+    if (arduboy.justPressed(DOWN_BUTTON))
+    {
+      highScore = 0;
+      EEPROM.put(EEPROM_SCORE, highScore);
+      primed = false;
+      sound.tone(NOTE_E5,50, NOTE_E6,50, NOTE_E7,50);
+    }
+  else if (arduboy.justPressed(B_BUTTON))
+  {
     primed = false;
   }
   // Display a warning
-  arduboy.setCursor(16, 1);
-  arduboy.print(F("DOWN:DEL."));
-  arduboy.setCursor(66, 1);
-  arduboy.print(F("B:CANCEL"));
+    arduboy.setCursor(16, 1);
+    arduboy.print(F("DOWN:DEL."));
+    arduboy.setCursor(66, 1);
+    arduboy.print(F("B:CANCEL"));
   }
   
   if(arduboy.everyXFrames(15)) // when running at 60fps
   {
-  ++heartFrame; // Add 1
-  if(heartFrame > 4) { heartFrame = 0; } // resets frame to 0 if greater then 4
+    ++heartFrame; // Add 1
+    if(heartFrame > 4)
+    {
+      heartFrame = 0;
+    }
   }
-
-  // 2 hearts for the Splashscreen
   Sprites::drawExternalMask(23, 31, heart, heartmask, heartFrame, heartFrame);
   Sprites::drawExternalMask(89, 31, heart, heartmask, heartFrame, heartFrame);
   arduboy.drawBitmap(0, 0, splash, 128, 64, WHITE);
   fadeIn();
 
   // If 'A' button is pressed move to gameplay
-  if (arduboy.justPressed(A_BUTTON))  {
+  if (arduboy.justPressed(A_BUTTON))
+  {
     arduboy.initRandomSeed();
-    score = 0;
-    shield = 3;
-    fuelcount = 0;
+    resetfornewgame();
     state = 2; 
     resetFadeIn();
   }
@@ -948,15 +971,9 @@ void doSplash() {
   sprite.drawExternalMask(46, 52, pressb, pressbmask, 0, 0);
 
   // If 'A' button is pressed move to splash
-  if (arduboy.justPressed(B_BUTTON))  {
-    fueltimer = 0;
+  if (arduboy.justPressed(B_BUTTON))
+  {
     state = 1;
-    score = 0;
-    enemy1y = -28;
-    enemy2y = -28;
-    fuelpower.y = -28;
-    hearty = -28;
-    heartx = random(26,87);
   }
 }
 
@@ -998,88 +1015,89 @@ void heartshot()
   }
 }
 
-void youarehit() {
-sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100);
-arduboy.invert(true);
-arduboy.digitalWriteRGB(RED_LED, RGB_ON);
-flashtimer = arduboy.frameCount + 2; // speed to the screen flash when hit
-ledTimer = arduboy.frameCount + 30;
+void youarehit()
+{
+  sound.tone(NOTE_C4,100, NOTE_C3,100, NOTE_C2,100);
+  arduboy.invert(true);
+  arduboy.digitalWriteRGB(RED_LED, RGB_ON);
+  flashtimer = arduboy.frameCount + 2; // speed to the screen flash when hit
+  ledTimer = arduboy.frameCount + 30;
   // check is game is over
   if(shield < 0)
   {
-  speed = 1;
-  state = 3;
-  arduboy.invert(false); // display the screen no inverted
-  arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
-  arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
-  arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off LEDS
+    speed = 1;
+    state = 3;
+    arduboy.invert(false); // display the screen no inverted
+    arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
+    arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
+    arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off LEDS
   }
 }
 
 void oneup()
 {
-arduboy.digitalWriteRGB(GREEN_LED, RGB_ON);
-sound.tone(NOTE_E6,100, NOTE_E7,100, NOTE_E8,100);
-ledTimerg = arduboy.frameCount + 30;
+  arduboy.digitalWriteRGB(GREEN_LED, RGB_ON);
+  sound.tone(NOTE_E6,100, NOTE_E7,100, NOTE_E8,100);
+  ledTimerg = arduboy.frameCount + 30;
 }
 
 void speedupdisplay()
 {
 arduboy.digitalWriteRGB(BLUE_LED, RGB_ON);
-ledTimerb = arduboy.frameCount + 30;
-sound.tone(NOTE_G4,100, NOTE_E5,100, NOTE_C6,100);
-sound.tone(NOTE_C5,100, NOTE_E4,100, NOTE_G3,100);
+  ledTimerb = arduboy.frameCount + 30;
+  sound.tone(NOTE_G4,100, NOTE_E5,100, NOTE_C6,100);
+  sound.tone(NOTE_C5,100, NOTE_E4,100, NOTE_G3,100);
 }
 
 void timersupdate()
 {
   if(ledTimer > 0 && arduboy.frameCount >= ledTimer)
   {
-  arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
-  ledTimer = 0;
+    arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
+    ledTimer = 0;
   }
-    if(ledTimerg > 0 && arduboy.frameCount >= ledTimerg)
-    {
+  if(ledTimerg > 0 && arduboy.frameCount >= ledTimerg)
+  {
     arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF);
     ledTimerg = 0;
-    }
+  }
 
-    if(ledTimerb > 0 && arduboy.frameCount >= ledTimerb)
-    {
+  if(ledTimerb > 0 && arduboy.frameCount >= ledTimerb)
+  {
     arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
     ledTimerb = 0;
-    }
-        if(flashtimer > 0 && arduboy.frameCount >= flashtimer)
-        {
-        arduboy.invert(false);
-        flashtimer = 0;
-        }
+  }
+  if(flashtimer > 0 && arduboy.frameCount >= flashtimer)
+  {
+    arduboy.invert(false);
+      flashtimer = 0;
+  }
 }
 
 void animationframes()
 {
   if(arduboy.everyXFrames(2)) // when running at 60fps
   {
-  ++shipFrame; // Add 1
-  shipFrame %= 2; // Remainder of dividing by 2
+    ++shipFrame; // Add 1
+    shipFrame %= 2; // Remainder of dividing by 2
   }
 
   if(arduboy.everyXFrames(5)) // when running at 60fps
   {
-  ++enemyFrame; // Add 1
-  enemyFrame %= 2; // Remainder of dividing by 2
+    ++enemyFrame; // Add 1
+    enemyFrame %= 2; // Remainder of dividing by 2
   }
   
   if(arduboy.everyXFrames(7)) // when running at 60fps
   {
-  ++heartFrame; // Add 1
-  if(heartFrame > 3) { heartFrame = 0; } // resets frame to 0 if greater then 3
+    ++heartFrame; // Add 1
+    if(heartFrame > 3) { heartFrame = 0; } // resets frame to 0 if greater then 3
   }
   
   if(arduboy.everyXFrames(30)) // when running at 60fps
   {
-  ++fuelFrame; // Add 1
-  if(fuelFrame > 1) { fuelFrame = 0; } // resets every .5 seconds
+    ++fuelFrame; // Add 1
+    if(fuelFrame > 1) { fuelFrame = 0; } // resets every .5 seconds
   }
 }
 
@@ -1089,8 +1107,8 @@ void heartreset()
   hearty = hearty + speed + 1;
   if( hearty > 64 )
   {
-  hearty = -28;
-  heartx = random(26,87);
+    hearty = -28;
+    heartx = random(26,87);
   }
 }
 
@@ -1100,15 +1118,16 @@ void enemyreset()
   enemy1y = enemy1y + speed;
   if( enemy1y > 64 )
   {
-  enemy1y = -28;
-  enemy1x = random(26,87);
+    enemy1y = -28;
+    enemy1x = random(26,87);
   }
+  
   enemy2y = enemy2y + speed;
-    if( enemy1y > 64 )
-    {
+  if( enemy1y > 64 )
+  {
     enemy2y = -28;
     enemy2x = random(26,87);
-    }
+  }
 }
 
 void fueltime()
@@ -1116,7 +1135,7 @@ void fueltime()
   // Fuel timer count
   if(arduboy.everyXFrames(60)) // when running at 60fps
   {
-  fuelcount = fuelcount + 2; // Add 2
+    fuelcount = fuelcount + 2; // Add 2
   }
 }
 
@@ -1169,14 +1188,14 @@ void fuellow()
   // make sure fuel don't overflow
   if(fuelcount < 1)
   {
-  fuelcount = 0;
+    fuelcount = 0;
   }
     // Fuel Low Warning if needed
     if(fuelcount > 30)
     {
       if(fuelFrame < 1)
       {
-      Sprites::drawExternalMask(player.x - 4, player.y + 6, lowfuel, lowfuelmask, 0, 0);
+        Sprites::drawExternalMask(player.x - 4, player.y + 6, lowfuel, lowfuelmask, 0, 0);
       }
     }
 }
@@ -1186,21 +1205,32 @@ void outoffuel()
   // GameOver if out of fuel
   if(fuelcount > 40)
   {
-  arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
-  arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
-  arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off LEDS
-  state = 3;
+    arduboy.digitalWriteRGB(RED_LED, RGB_OFF); // turn off LEDS
+    arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
+    arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off LEDS
+    state = 3;
   }
 }
 
 
-void speedincrease()
+void speedincrease(uint16_t oldScore)
 {
-  uint16_t oldScore = score;
   // check if speed increase triggered
-  if(score >= 1500 && oldScore < 1500) { speed = 2; speedupdisplay(); }
-  else if(score >= 1000 && oldScore < 1000) { speed = 1; speedupdisplay(); }
-  else if(score >= 500 && oldScore < 500) { speed = 2; speedupdisplay(); }
+  if(score >= 1500 && oldScore < 1500)
+  {
+    speed = 2;
+    speedupdisplay();
+    }
+  else if(score >= 1000 && oldScore < 1000)
+  {
+    speed = 1;
+    speedupdisplay();
+  }
+  else if(score >= 500 && oldScore < 500)
+  {
+    speed = 2;
+    speedupdisplay();
+  }
 }
 
 void buttonpressed()
@@ -1208,30 +1238,30 @@ void buttonpressed()
   // what is happening when we press buttons
   if(arduboy.pressed(LEFT_BUTTON) && player.x > 18)
   {
-  --player.x;
+    --player.x;
   }
-    if(arduboy.pressed(RIGHT_BUTTON) && player.x < 92)
-    {
+  if(arduboy.pressed(RIGHT_BUTTON) && player.x < 92)
+  {
     ++player.x;
-    }
-      if(arduboy.pressed(UP_BUTTON) && player.y > 10)
-      {
-      --player.y; 
-      }
-        if(arduboy.pressed(DOWN_BUTTON) && player.y < 49)
-        {
-        ++player.y;
-        }
+  }
+  if(arduboy.pressed(UP_BUTTON) && player.y > 10)
+  {
+    --player.y; 
+  }
+  if(arduboy.pressed(DOWN_BUTTON) && player.y < 49)
+  {
+    ++player.y;
+  }
     
-          if(arduboy.justPressed(B_BUTTON))
-          {
-          sound.tone(NOTE_C4,70, NOTE_D5,50, NOTE_E6,70); state = 4;
-          }
+  if(arduboy.justPressed(B_BUTTON))
+  {
+    sound.tone(NOTE_C4,70, NOTE_D5,50, NOTE_E6,70); state = 4;
+  }
 }
 
 void gameplay()
 {
-  speedincrease();
+  uint16_t oldScore = score;
   enemyreset();
   heartreset();
   fueltime();
@@ -1251,5 +1281,5 @@ void gameplay()
   fuellow();
   outoffuel();
   buttonpressed();
-  
+  speedincrease(oldScore);  
 }
