@@ -873,6 +873,7 @@ void pause()
 void resetfornewgame()
 {
   score = 0;
+  speed = 1;
   shield = 3;
   fuelcount = 0;
   fueltimer = 0;
