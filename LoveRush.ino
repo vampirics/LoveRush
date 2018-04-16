@@ -24,7 +24,7 @@ Position en2 = { 0, 0 };
 Position expl1 = { 0, 0 };
 Position expl2 = { 0, 0 };
 Position heartminus = { 0, 0 };
-Position fuelpower = { 0, 0 };
+Position fuelpower = { 50, 0 };
 
 // Globals
 const uint8_t FPS = 60;
@@ -59,6 +59,7 @@ bool primed = false;
 
 bool hit = false;
 bool hearthit = false;
+bool gotpowerup = false;
 
 int8_t speed = 1;
 uint16_t fueltimer = 0;
@@ -605,6 +606,147 @@ void loop() {
   arduboy.display();
 }
 
+void handleCollisions()
+{
+  Rect playerRect = { player.x + 6, player.y + 4, 5, 5 };
+  Rect enemy1Rect = { enemy1x + 1, enemy1y + 20, 13, 13 };
+  Rect enemy2Rect = { enemy2x + 1, enemy2y + 20, 13, 13 };
+  Rect heartRect = { heartx + 1, hearty + 1, 15, 13 };
+
+// collision with a heart  
+  if(arduboy.collide(playerRect, heartRect)) {
+  score = score + 5;
+  ++heartcounter;
+  sound.tone(NOTE_E3,80, NOTE_E4,80, NOTE_E5,80);
+  hearty = -14;
+  heartx = random(26,87);
+  // check if you gain a life
+    if(heartcounter >= 15) {
+    ++shield; oneup(); heartcounter = 0;
+    }
+  }
+
+// collision with enemy 1
+  if(arduboy.collide(playerRect, enemy1Rect)) {
+  --shield;
+  youarehit();
+  enemy1y = -14;
+  enemy1x = random(26,87);
+  }
+  
+// collision with enemy 2  
+  if(arduboy.collide(playerRect, enemy2Rect)) {
+  --shield;
+  youarehit();
+  enemy2y = -28;
+  enemy2x = random(26,87);
+  }
+
+// collision with fuel
+  Rect fuelpowRect = { fuelpower.x + 3, fuelpower.y + 3, 12, 12 };  
+
+  if(arduboy.collide(playerRect, fuelpowRect))
+  {
+    onCollideWithPowerup();
+  }
+  
+// collisions with the laser  
+  if(arduboy.justPressed(A_BUTTON)) {
+        sound.tone(NOTE_C5,50, NOTE_C3,100, NOTE_C2,200);
+        arduboy.drawLine(player.x + 6, player.y - 1, player.x + 6, 10, WHITE);
+        arduboy.drawLine(player.x + 8, player.y - 1, player.x + 8, 10, WHITE);
+        arduboy.drawLine(player.x + 10, player.y - 1, player.x + 10, 10, WHITE);
+        Rect laserRect = { player.x + 8, player.y - 64, 2, 64 };
+          if(arduboy.collide(laserRect, enemy1Rect)) {
+          score = score + 10;
+          fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
+          sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
+          expl1.x = enemy1x;
+          expl1.y = enemy1y + 12;
+          hit = true;
+          enemy1y = -14;
+          enemy1x = random(26,87);
+          }
+            if(arduboy.collide(laserRect, enemy2Rect)) {
+            score = score + 10;
+            fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
+            sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
+            expl1.x = enemy2x + 2;
+            expl1.y = enemy2y + 12;
+            hit = true;
+            enemy2y = -14;
+            enemy2x = random(26,87);
+            }
+              if(arduboy.collide(laserRect, heartRect)) {
+              //check if score would be lower then 10, if not -10 pts
+              score = (score > 10) ? score - 10 : 0;
+              sound.tone(NOTE_C4,100, NOTE_C4,100, NOTE_C4,100);
+              heartminus.x = heartx;
+              heartminus.y = hearty;
+              hearthit = true;
+              hearty = -14;
+              heartx = random(26,87);
+              }
+    }
+}
+
+void onCollideWithPowerup()
+{
+  fuelcount = (fuelcount > 12) ? fuelcount - 12 : 0;
+  gotpowerup = true;
+  
+  resetPowerup();
+  
+  sound.tone(NOTE_E6,100, NOTE_E7,100, NOTE_E8,100);
+  
+}
+
+void resetPowerup()
+{
+  // Power up spawn code goes here
+  fuelpower.x = random(26, 87);
+  fuelpower.y = -28;
+  
+  // New power up at random interval between 30 and 60 seconds
+  powerUpCounter = random(20, 30);
+}
+
+void drawPowerup()
+{
+  Sprites::drawExternalMask(fuelpower.x, fuelpower.y, fuelpowerup, fuelpowerupmask, powerup1Frame, powerup1Frame);
+}
+
+void updatePowerup()
+{
+  // Move powerup one pixel every 1/4 seconds
+  if(arduboy.everyXFrames(FPS / 60))
+  {
+    if(fuelpower.y <= HEIGHT)
+    {
+      // Move ++fuelpower.y; from where it currently is to here
+      // This will prevent it moving after it goes offscreen
+      ++fuelpower.y;
+    }
+  }
+
+  if(arduboy.everyXFrames(FPS))
+  {
+    if(fuelpower.y > HEIGHT)
+    {
+      if(powerUpCounter > 0)
+        --powerUpCounter;
+      else
+        resetPowerup();
+    }
+  }
+
+  if(arduboy.everyXFrames(15)) // when running at 60fps
+  {
+    ++powerup1Frame; // Add 1
+    powerup1Frame %= 2; // resets frame to 0 if greater then 4
+  }
+}
+
 void vsboot() {
   // Vsoft logo display
   arduboy.drawBitmap(0, 0, bootlogo, 128, 64, WHITE);
@@ -737,12 +879,6 @@ void doSplash() {
     fuelcount = 0;
     state = 2; 
     resetFadeIn();
-    enemy1x = random(26,87);
-    enemy1y = -28;
-    enemy2x = random(26,87);
-    enemy2y = -28;
-    heartx = random(26,87);
-    hearty = -14;
   }
 
 }
@@ -784,8 +920,17 @@ void doSplash() {
   sprite.drawExternalMask(46, 52, pressb, pressbmask, 0, 0);
 
   // If 'A' button is pressed move to splash
-  if (arduboy.justPressed(B_BUTTON))  { fueltimer = 0; state = 1; score = 0; enemy1y = -28; enemy2y = -28; }
+  if (arduboy.justPressed(B_BUTTON))  {
+    fueltimer = 0;
+    state = 1;
+    score = 0;
+    enemy1y = -28;
+    enemy2y = -28;
+    fuelpower.y = -28;
+    hearty = -28;
+    heartx = random(26,87);
   }
+}
 
 void explosions()
 {
@@ -917,13 +1062,19 @@ void gameplay() {
   {
   fuelcount = fuelcount + 2; // Add 2
   }
-  
+
+// handle collisions
+  handleCollisions();
+    
 // display explosions if true
   explosions();
   
 // display a heart being shot if true
 
   heartshot();
+  
+  drawPowerup();
+  updatePowerup();
 
 // falling heart display
   Sprites::drawExternalMask(heartx, hearty, heart, heartmask, heartFrame, heartFrame);
@@ -950,40 +1101,10 @@ void gameplay() {
   hearty = -28;
   heartx = random(26,87);
   }
-  
-  ++fuelpower.y;
 
   
 // here i display the main sprite
   Sprites::drawExternalMask(player.x, player.y, player1, player1mask, shipFrame, shipFrame);
-  
-// calling powerup if conditions met
-if(arduboy.everyXFrames(FPS))
-{
-  if(powerUpCounter > 0)
-  {
-    --powerUpCounter;
-  }
-  else
-  {
-    if(fuelpower.y > 64)
-    {
-      // Power up spawn code goes here
-      fuelpower.x = random(26, 87);
-      fuelpower.y = -28;
-
-      // New power up at random interval between 10 and 20 seconds
-      powerUpCounter = random(10, 20);
-    }
-  }
-}
-if(arduboy.everyXFrames(15)) // when running at 60fps
-  {
-  ++powerup1Frame; // Add 1
-  if(powerup1Frame > 1) { powerup1Frame = 0; } // resets frame to 0 if greater then 4
-  }
-Sprites::drawExternalMask(fuelpower.x, fuelpower.y, fuelpowerup, fuelpowerupmask, powerup1Frame, powerup1Frame);
-
   
 // Score area
   arduboy.fillRect(0, 0, 128, 10, BLACK);
@@ -1022,50 +1143,6 @@ Sprites::drawExternalMask(fuelpower.x, fuelpower.y, fuelpowerup, fuelpowerupmask
         state = 3;
         }
   
-// checking for collisions
-  Rect playerRect = { player.x + 6, player.y + 4, 5, 5 };
-  Rect enemy1Rect = { enemy1x + 1, enemy1y + 20, 13, 13 };
-  Rect enemy2Rect = { enemy2x + 1, enemy2y + 20, 13, 13 };
-  Rect heartRect = { heartx + 1, hearty + 1, 15, 13 };
-  Rect fuelpowRect = { fuelpower.x + 3, fuelpower.y + 3, 12, 12 };
-  
-  // collision with powerup fuel
-  if(arduboy.collide(playerRect, fuelpowRect)) {
-  fuelcount = (fuelcount > 4) ? fuelcount - 4 : 0;
-  sound.tone(NOTE_E6,100, NOTE_E7,100, NOTE_E8,100);
-  fuelpower.y = -28;
-  fuelpower.x = random(26,87);
-  }
-
-// collision with a heart  
-  if(arduboy.collide(playerRect, heartRect)) {
-  score = score + 5;
-  ++heartcounter;
-  sound.tone(NOTE_E3,80, NOTE_E4,80, NOTE_E5,80);
-  hearty = -14;
-  heartx = random(26,87);
-  // check if you gain a life
-    if(heartcounter >= 15) {
-    ++shield; oneup(); heartcounter = 0;
-    }
-  }
-
-// collision with enemy 1
-  if(arduboy.collide(playerRect, enemy1Rect)) {
-  --shield;
-  youarehit();
-  enemy1y = -14;
-  enemy1x = random(26,87);
-  }
-  
-// collision with enemy 2  
-  if(arduboy.collide(playerRect, enemy2Rect)) {
-  --shield;
-  youarehit();
-  enemy2y = -28;
-  enemy2x = random(26,87);
-  }
-  
 // what is happening when we press buttons
   if(arduboy.pressed(LEFT_BUTTON) && player.x > 18) {
         --player.x;
@@ -1079,50 +1156,14 @@ Sprites::drawExternalMask(fuelpower.x, fuelpower.y, fuelpowerup, fuelpowerupmask
     if(arduboy.pressed(DOWN_BUTTON) && player.y < 49) {
         ++player.y;
     }
-    if(arduboy.justPressed(A_BUTTON)) {
-        sound.tone(NOTE_C5,50, NOTE_C3,100, NOTE_C2,200);
-        arduboy.drawLine(player.x + 6, player.y - 1, player.x + 6, 10, WHITE);
-        arduboy.drawLine(player.x + 8, player.y - 1, player.x + 8, 10, WHITE);
-        arduboy.drawLine(player.x + 10, player.y - 1, player.x + 10, 10, WHITE);
-        Rect laserRect = { player.x + 8, player.y - 64, 2, 64 };
-          if(arduboy.collide(laserRect, enemy1Rect)) {
-          score = score + 10;
-          fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
-          sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
-          expl1.x = enemy1x;
-          expl1.y = enemy1y + 12;
-          hit = true;
-          enemy1y = -14;
-          enemy1x = random(26,87);
-          }
-            if(arduboy.collide(laserRect, enemy2Rect)) {
-            score = score + 10;
-            fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
-            sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
-            expl1.x = enemy2x + 2;
-            expl1.y = enemy2y + 12;
-            hit = true;
-            enemy2y = -14;
-            enemy2x = random(26,87);
-            }
-              if(arduboy.collide(laserRect, heartRect)) {
-              //check if score would be lower then 10, if not -10 pts
-              score = (score > 10) ? score - 10 : 0;
-              sound.tone(NOTE_C4,100, NOTE_C4,100, NOTE_C4,100);
-              heartminus.x = heartx;
-              heartminus.y = hearty;
-              hearthit = true;
-              hearty = -14;
-              heartx = random(26,87);
-              }
-    }
+    
   if(arduboy.justPressed(B_BUTTON)) {
   sound.tone(NOTE_C4,70, NOTE_D5,50, NOTE_E6,70); state = 4;
   }
 
 // check if speed increase triggered
-  if(score >= 900 && oldScore < 900) { speed = 2; speedupdisplay(); }
-  else if(score >= 700 && oldScore < 700) { speed = 1; speedupdisplay(); }
+  if(score >= 1500 && oldScore < 1500) { speed = 2; speedupdisplay(); }
+  else if(score >= 1000 && oldScore < 1000) { speed = 1; speedupdisplay(); }
   else if(score >= 500 && oldScore < 500) { speed = 2; speedupdisplay(); }
   
 }
