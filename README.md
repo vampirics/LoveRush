@@ -12,8 +12,9 @@ Game Features:
 - Cute hearts all over the screen!
 - Press A to shoot
 - Press B to pause the game
-- Catching heart gives you 5pts
-- You get 1 additional shield every 15 hearts
+- Catching heart gives you 5pts and a small amout of fuel
+- You get 1 additional shield every 15 hearts and some fuel back
 - Shooting a heart is -10pts
 - Shooting angry faces gives you 10pts
 - A collision with an angry face is -1 shield (you have 4 shields at the start total)
+- A collision with an angry face also makes you lose some precious fuel.
