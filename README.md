@@ -18,3 +18,4 @@ Game Features:
 - Shooting angry faces gives you 10pts
 - A collision with an angry face is -1 shield (you have 4 shields at the start total)
 - A collision with an angry face also makes you lose some precious fuel.
+- Fuel Powerup added (more powerups to come in the future)
