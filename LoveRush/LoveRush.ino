@@ -2,6 +2,7 @@
 #include <ArduboyTones.h>
 
 #include "Images.h"
+#include "List.h"
 
 #define EEPROM_START_C1                 (EEPROM_STORAGE_SPACE_START + 128)
 #define EEPROM_START_C2                 (EEPROM_START_C1 + 1)
@@ -64,6 +65,7 @@ Position cloudr = { 103, 0 };
 
 const uint8_t FPS = 60;
 uint8_t powerUpCounter = 0;
+uint8_t powerUpCounter2 = 0;
 
 uint8_t state = 0;
 
@@ -221,7 +223,8 @@ void gameplay()
   
 	updateTimers();
     
-	updatePowerup();  
+	updatePowerup(); 
+  updatePowerup2(); 
 	updateFuelGauge();
   
 	handleCollisions();
@@ -233,6 +236,7 @@ void gameplay()
 	drawObjects();
 	drawPlayer();
 	drawLaser();
+  drawScoreboard();
   
 	updateSpeed(oldScore);
 }
@@ -363,6 +367,17 @@ void updatePowerup()
   }
 }
 
+void updatePowerup2()
+{
+  if(powerUpCounter2 > 0)
+  {
+    if(arduboy.everyXFrames(FPS))
+    {
+      --powerUpCounter2;
+    }
+  }
+}
+
 void updateFuelGauge()
 {	
 	// Fuel timer count
@@ -458,6 +473,13 @@ void handlePlayerFuelCollision(Object & fuel)
 	sound.tone(NOTE_E6, 100, NOTE_E7, 100, NOTE_E8, 100);
 }
 
+void handlePlayerLoveBombCollision(Object & LoveBomb)
+{
+  
+
+  sound.tone(NOTE_E6, 100, NOTE_E7, 100, NOTE_E8, 100);
+}
+
 void handlePlayerCollision(Object & object)
 {
 	switch(object.type)
@@ -465,6 +487,7 @@ void handlePlayerCollision(Object & object)
 		case ObjectType::Heart: handlePlayerHeartCollision(object); break;
 		case ObjectType::Enemy: handlePlayerEnemyCollision(object); break;
 		case ObjectType::Fuel: handlePlayerFuelCollision(object); break;
+    case ObjectType::LoveBomb: handlePlayerLoveBombCollision(object); break;
 		default: break;
 	}
 }
@@ -570,22 +593,22 @@ void updateFuelCounter(void)
 
 void updateExplosion(Object & explosion)
 {
-	++explosion.y;
-	if(explosion.y > 64)
-	{
-		explosion.x = random(26, 87);
-		explosion.y = -28;
-		explosion.type = ObjectType::Enemy;
-		explosion.frame = 0;
-	}
-	else if(arduboy.everyXFrames(5)) // when running at 60fps
-	{
-		++explosion.frame;
-		if(explosion.frame > 3)
-		{
-			explosion.frame = 0;
-		}
-	}
+  ++explosion.y;
+  if(explosion.y > 64)
+  {
+    explosion.x = random(26, 87);
+    explosion.y = -28;
+    explosion.type = ObjectType::Enemy;
+    explosion.frame = 0;
+  }
+  else if(arduboy.everyXFrames(5)) // when running at 60fps
+  {
+    ++explosion.frame;
+    if(explosion.frame > 3)
+    {
+      explosion.frame = 0;
+    }
+  }
 }
 
 void updateHeart(Object & heart)
@@ -660,6 +683,27 @@ void updateFuel(Object & fuel)
 	}
 }
 
+void updateLoveBomb(Object & LoveBomb)
+{
+  if(powerUpCounter2 == 0)
+  {
+    if(LoveBomb.y <= HEIGHT)
+    {
+      ++LoveBomb.y;
+    }
+    else
+    {
+      resetLoveBomb(LoveBomb);
+    }
+  }
+  
+  if(arduboy.everyXFrames(30)) // when running at 60fps
+  {
+    ++LoveBomb.frame;
+    LoveBomb.frame %= 2;
+  }
+}
+
 void updateObject(Object & object)
 {
 	switch(object.type)
@@ -669,7 +713,7 @@ void updateObject(Object & object)
 		case ObjectType::Enemy: updateEnemy(object); break;
 		case ObjectType::Explosion: updateExplosion(object); break;
 		case ObjectType::Fuel: updateFuel(object); break;
-		//case ObjectType::LoveBomb: updateLoveBomb(object); break;
+		case ObjectType::LoveBomb: updateLoveBomb(object); break;
 		default: break;
 	}
 }
@@ -733,6 +777,15 @@ void resetFuel(Object & fuel)
   
   fuel.x = random(26, 87);
   fuel.y = -28;
+}
+
+void resetLoveBomb(Object & LoveBomb)
+{  
+  // New power up at random interval between 30 and 60 seconds
+  powerUpCounter2 = random(30, 50);
+  
+  LoveBomb.x = random(26, 87);
+  LoveBomb.y = -28;
 }
 
 void vsboot()
