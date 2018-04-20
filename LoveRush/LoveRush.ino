@@ -22,7 +22,7 @@ enum class ObjectType
 	Enemy,
 	Explosion,
 	Fuel,
-	LoveBomb
+	LoveBomb,
 };
 
 class Object
@@ -255,7 +255,7 @@ void resetGame()
   objects[2] = Object(random(26, 87), -28, ObjectType::Enemy);
   objects[3] = Object(random(26, 87), -28, ObjectType::Enemy);
   objects[4] = Object(random(26, 87), -28, ObjectType::Fuel);
-  //objects[6] = Object(0, 0, ObjectType::Lovebomb);
+  objects[6] = Object(random(26, 87), -28, ObjectType::LoveBomb);
 }
 
 void handleInput()
@@ -476,7 +476,8 @@ void handlePlayerFuelCollision(Object & fuel)
 void handlePlayerLoveBombCollision(Object & LoveBomb)
 {
   
-
+  resetLoveBomb(LoveBomb);
+  
   sound.tone(NOTE_E6, 100, NOTE_E7, 100, NOTE_E8, 100);
 }
 
@@ -533,6 +534,9 @@ bool checkPlayerCollision(const Object & object)
 		case ObjectType::Fuel:
 			objectRect = { object.x + 3, object.y + 3, 12, 12 };
 			break;
+     case ObjectType::LoveBomb:
+      objectRect = { object.x + 3, object.y + 3, 12, 12 };
+      break;
 		default:
 			return false;
 	}
@@ -782,7 +786,7 @@ void resetFuel(Object & fuel)
 void resetLoveBomb(Object & LoveBomb)
 {  
   // New power up at random interval between 30 and 60 seconds
-  powerUpCounter2 = random(30, 50);
+  powerUpCounter2 = random(20, 30);
   
   LoveBomb.x = random(26, 87);
   LoveBomb.y = -28;
