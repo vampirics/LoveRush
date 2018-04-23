@@ -53,7 +53,7 @@ bool operator ==(const Object & left, const Object & right)
 	return (left.type == right.type) && (left.x == right.x) && (left.y == right.y);
 }
 
-List<Object, 10> objects;
+List<Object, 16> objects;
 
 Object player;
 bool handleLaser;
