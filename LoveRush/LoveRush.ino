@@ -253,6 +253,7 @@ void resetGame()
   
   player = Object(54, 40, ObjectType::Player);
   
+  objects.clear();
   objects.add(Object(random(26, 87), -28, ObjectType::Heart));
   objects.add(Object(random(26, 87), -28, ObjectType::Heart));
   objects.add(Object(random(26, 87), -28, ObjectType::Enemy));
