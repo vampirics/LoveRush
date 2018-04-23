@@ -48,9 +48,7 @@ public:
   }
 };
 
-constexpr const uint8_t objectCount = 10;
-
-Object objects[objectCount];
+List<Object, 10> objects;
 
 Object player;
 bool handleLaser;
@@ -250,12 +248,12 @@ void resetGame()
   
   player = Object(54, 40, ObjectType::Player);
   
-  objects[0] = Object(random(26, 87), -28, ObjectType::Heart);
-  objects[1] = Object(random(26, 87), -28, ObjectType::Heart);
-  objects[2] = Object(random(26, 87), -28, ObjectType::Enemy);
-  objects[3] = Object(random(26, 87), -28, ObjectType::Enemy);
-  objects[4] = Object(random(26, 87), -28, ObjectType::Fuel);
-  objects[6] = Object(random(26, 87), -28, ObjectType::LoveBomb);
+  objects.add(Object(random(26, 87), -28, ObjectType::Heart));
+  objects.add(Object(random(26, 87), -28, ObjectType::Heart));
+  objects.add(Object(random(26, 87), -28, ObjectType::Enemy));
+  objects.add(Object(random(26, 87), -28, ObjectType::Enemy));
+  objects.add(Object(random(26, 87), -28, ObjectType::Fuel));
+  objects.add(Object(random(26, 87), -28, ObjectType::LoveBomb));
 }
 
 void handleInput()
@@ -566,7 +564,7 @@ bool checkLaserCollision(const Object & object)
 
 void handleCollisions()
 {
-	for(uint8_t i = 0; i < objectCount; ++i)
+	for(uint8_t i = 0; i < objects.getCount(); ++i)
 	{			
 		if(checkPlayerCollision(objects[i]))
 		{
@@ -724,7 +722,7 @@ void updateObject(Object & object)
 
 void updateObjects(void)
 {
-  for(uint8_t i = 0; i < objectCount; ++i)
+  for(uint8_t i = 0; i < objects.getCount(); ++i)
     updateObject(objects[i]);
 }
 
@@ -770,7 +768,7 @@ void drawObject(const Object & object)
 
 void drawObjects(void)
 {
-  for(uint8_t i = 0; i < objectCount; ++i)
+  for(uint8_t i = 0; i < objects.getCount(); ++i)
     drawObject(objects[i]);
 }
 
