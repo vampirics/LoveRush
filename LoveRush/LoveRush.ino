@@ -509,6 +509,7 @@ void handleLaserEnemyCollision(Object & enemy)
 	score = score + 10;
 	fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
 	enemy.type = ObjectType::Explosion;
+	objects.add(Object(random(26, 87), -28, ObjectType::Enemy));
 	sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
 }
 
@@ -600,22 +601,20 @@ void updateFuelCounter(void)
 
 void updateExplosion(Object & explosion)
 {
-  ++explosion.y;
-  if(explosion.y > 64)
-  {
-    explosion.x = random(26, 87);
-    explosion.y = -28;
-    explosion.type = ObjectType::Enemy;
-    explosion.frame = 0;
-  }
-  else if(arduboy.everyXFrames(5)) // when running at 60fps
-  {
-    ++explosion.frame;
-    if(explosion.frame > 3)
-    {
-      explosion.frame = 0;
-    }
-  }
+	++explosion.y;
+	if(explosion.y > 64)
+	{
+		// 'destroy' the explosion by removing it from the object list
+		objects.remove(explosion);
+	}
+	else if(arduboy.everyXFrames(5)) // when running at 60fps
+	{
+		++explosion.frame;
+		if(explosion.frame > 3)
+		{
+			explosion.frame = 0;
+		}
+	}
 }
 
 void updateHeart(Object & heart)
