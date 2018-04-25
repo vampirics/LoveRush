@@ -57,6 +57,7 @@ List<Object, 16> objects;
 
 Object player;
 bool handleLaser;
+bool loveTrigger = false;
 
 struct Position {
   int8_t x;
@@ -78,6 +79,7 @@ int8_t backdropy = 0;
 
 uint8_t heartFrame = 0;
 uint8_t fuelFrame = 0;
+uint8_t loveFrame = 0;
 
 int8_t shield = 3;
 bool primed = false;
@@ -233,6 +235,7 @@ void gameplay()
 	handleCollisions();
 	updateObjects();
 	updatePlayer();	
+  updateLoveFrame();
 	
 	drawBackground();
 	drawFuelGauge();
@@ -255,7 +258,7 @@ void resetGame()
   
   objects.clear();
   objects.add(Object(random(26, 87), -28, ObjectType::Heart));
-  objects.add(Object(random(26, 87), -28, ObjectType::Heart));
+  //objects.add(Object(random(26, 87), -28, ObjectType::Heart));
   objects.add(Object(random(26, 87), -28, ObjectType::Enemy));
   objects.add(Object(random(26, 87), -28, ObjectType::Enemy));
   objects.add(Object(random(26, 87), -28, ObjectType::Fuel));
@@ -444,7 +447,7 @@ void handlePlayerHeartCollision(Object & heart)
 	{
 		++shield;
 		handleOneUp();
-		fuelcount = (fuelcount > 10) ? fuelcount - 10 : 0;
+		//fuelcount = (fuelcount > 10) ? fuelcount - 10 : 0;
 		heartcounter = 0;
 	}
 	
@@ -477,11 +480,11 @@ void handlePlayerFuelCollision(Object & fuel)
 	sound.tone(NOTE_E6, 100, NOTE_E7, 100, NOTE_E8, 100);
 }
 
-void handlePlayerLoveBombCollision(Object & LoveBomb)
+void handlePlayerLoveBombCollision(Object & loveBomb)
 {
   
-  resetLoveBomb(LoveBomb);
-  
+  resetLoveBomb(loveBomb);
+  loveTrigger = true;
   sound.tone(NOTE_E6, 100, NOTE_E7, 100, NOTE_E8, 100);
 }
 
@@ -508,7 +511,7 @@ void handleLaserHeartCollision(Object & heart)
 void handleLaserEnemyCollision(Object & enemy)
 {
 	score = score + 10;
-	fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
+	//fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
 	enemy.type = ObjectType::Explosion;
 	objects.add(Object(random(26, 87), -28, ObjectType::Enemy));
 	sound.tone(NOTE_C3,100, NOTE_C2,100, NOTE_C1,100);
@@ -711,6 +714,21 @@ void updateLoveBomb(Object & LoveBomb)
   }
 }
 
+void updateLoveFrame()
+{
+  if(loveTrigger)
+  {
+    headintoHeart();
+    ++loveFrame;
+  }
+    if (loveFrame >= 240)
+    {
+      heartintoHeads(0);
+      loveTrigger = false;
+      loveFrame = 0;
+    }
+}
+
 void updateObject(Object & object)
 {
 	switch(object.type)
@@ -729,6 +747,29 @@ void updateObjects(void)
 {
   for(uint8_t i = 0; i < objects.getCount(); ++i)
     updateObject(objects[i]);
+}
+
+void headintoHeart() //check if the object is an enemy and turns it into a heart
+{
+  for(uint8_t i = 0; i < objects.getCount(); ++i)
+  {
+    if(objects[i].type == ObjectType::Enemy)
+    {
+      objects[i].type = ObjectType::Heart;
+    }
+  }
+}
+
+void heartintoHeads(uint8_t enemyCount) //check if the object is aheart and turns it into a head
+{
+  for(uint8_t i = 0; i < objects.getCount(); ++i)
+  {
+    if(objects[i].type == ObjectType::Heart && enemyCount < 2)
+    {
+      objects[i].type = ObjectType::Enemy;
+      ++enemyCount;
+    }
+  }
 }
 
 void drawObject(const Object & object)
@@ -789,7 +830,7 @@ void resetFuel(Object & fuel)
 void resetLoveBomb(Object & LoveBomb)
 {  
   // New power up at random interval between 30 and 60 seconds
-  powerUpCounter2 = random(20, 30);
+  powerUpCounter2 = random(30, 60);
   
   LoveBomb.x = random(26, 87);
   LoveBomb.y = -28;
