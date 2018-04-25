@@ -236,6 +236,8 @@ void gameplay()
 	updateObjects();
 	updatePlayer();	
   updateLoveFrame();
+
+  loverushFlash();
 	
 	drawBackground();
 	drawFuelGauge();
@@ -253,6 +255,7 @@ void resetGame()
   speed = 1;
   shield = 3;
   fuelcount = 0;
+  heartcounter = 0;
   
   player = Object(54, 40, ObjectType::Player);
   
@@ -418,6 +421,17 @@ void updateFuelGauge()
 	{
 		state = 3;
 	}
+}
+
+void loverushFlash()
+{
+  if (loveTrigger)
+  {
+    if(arduboy.everyXFrames(3))
+    {
+      Sprites::drawExternalMask(49, 25, loverush, loverushmask, 0, 0);
+    }
+  }
 }
 
 void drawFuelGauge()
