@@ -213,10 +213,11 @@ void loop()
   arduboy.clear();
 
   if (state == 0)  { vsboot(); }
-  else if (state == 1)  { updateSplashState(); }
-  else if (state == 2)  { gameplay(); }
-  else if (state == 3)  { updateGameOverState(); }
-  else if (state == 4)  { updatePauseState(); }
+  else if (state == 1)  { Pharapboot(); }
+  else if (state == 2)  { updateSplashState(); }
+  else if (state == 3)  { gameplay(); }
+  else if (state == 4)  { updateGameOverState(); }
+  else if (state == 5)  { updatePauseState(); }
   
   arduboy.display();
 }
@@ -304,7 +305,7 @@ void handleInput()
 	if(arduboy.justPressed(B_BUTTON))
 	{
 		sound.tone(NOTE_C4, 70, NOTE_D5, 50, NOTE_E6, 70);
-		state = 4;
+		state = 5;
 	}
 }
 
@@ -325,12 +326,12 @@ void drawPlayer()
 void updateSpeed(uint16_t oldScore)
 {
 	// check if speed increase triggered
-	if(score >= 1500 && oldScore < 1500)
+	if(score >= 850 && oldScore < 850)
 	{
 		speed = 2;
 		handleSpeedUp();
 	}
-	else if(score >= 1000 && oldScore < 1000)
+	else if(score >= 650 && oldScore < 650)
 	{
 		speed = 1;
 		handleSpeedUp();
@@ -407,7 +408,7 @@ void updateFuelGauge()
 	// GameOver if out of fuel
 	if(fuelcount > 40)
 	{
-		state = 3;
+		state = 4;
 	}
 }
 
@@ -871,6 +872,27 @@ void vsboot()
   }
 }
 
+void Pharapboot()
+{
+  // Pharap image display
+    sprite.drawExternalMask(52, 8, Pharap, Pharapmask, 0, 0);
+    arduboy.setCursor(37, 49);
+    arduboy.print(F("OPTIMIZED"));
+    if(arduboy.everyXFrames(120)) // when running at 60fps
+    {
+      sprite.drawExternalMask(52, 8, Pharap, Pharapmask, 1, 0);
+    }
+      if(fadeIn())
+      {
+        if (arduboy.justPressed(A_BUTTON))
+        {
+          resetFade();
+          resetFadeIn();
+          state = 2;
+        }
+    }
+}
+
   // scrolling background1 function
 void drawBackground()
 {
@@ -959,7 +981,7 @@ void updatePauseState()
 	// If 'B' button is pressed move back to gameplay
 	if (arduboy.justPressed(B_BUTTON))
 	{
-		state = 2;
+		state = 3;
 	}
 }
 
@@ -1012,7 +1034,7 @@ void updateSplashState()
 	{
 		arduboy.initRandomSeed();
 		resetGame();
-		state = 2; 
+		state = 3; 
 		resetFadeIn();
 	}
 
@@ -1067,7 +1089,7 @@ void updateGameOverState()
 	// If 'A' button is pressed move to splash
 	if (arduboy.justPressed(B_BUTTON))
 	{
-		state = 1;
+		state = 2;
 	}
 }
 
@@ -1082,7 +1104,7 @@ void handlePlayerHit()
 	if(shield < 0)
 	{
 		speed = 1;
-		state = 3;
+		state = 4;
 		arduboy.invert(false); // display the screen no inverted
 	}
 }
