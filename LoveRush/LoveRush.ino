@@ -260,6 +260,8 @@ void resetGame()
   shield = 3;
   fuelcount = 0;
   heartcounter = 0;
+  powerUpCounter = random(10, 20);
+  powerUpCounter2 = random(10, 20);
   
   player = Object(54, 40, ObjectType::Player);
   
@@ -877,7 +879,7 @@ void Pharapboot()
   // Pharap image display
     sprite.drawExternalMask(52, 8, Pharap, Pharapmask, 0, 0);
     arduboy.setCursor(37, 49);
-    arduboy.print(F("OPTIMIZED"));
+    arduboy.print(F("OPTIMISED"));
     if(arduboy.everyXFrames(120)) // when running at 60fps
     {
       sprite.drawExternalMask(52, 8, Pharap, Pharapmask, 1, 0);
