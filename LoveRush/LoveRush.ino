@@ -80,6 +80,7 @@ int8_t backdropy = 0;
 uint8_t heartFrame = 0;
 uint8_t fuelFrame = 0;
 uint8_t loveFrame = 0;
+uint8_t LowfuelFrame = 0;
 
 int8_t shield = 3;
 bool primed = false;
@@ -230,12 +231,13 @@ void gameplay()
     
 	updatePowerup(); 
   updatePowerup2(); 
-	updateFuelGauge();
   
 	handleCollisions();
 	updateObjects();
-	updatePlayer();	
+	updatePlayer();
+  updateFuelGauge();	
   updateLoveFrame();
+  updateLowfuelFrame();
 
   loverushFlash();
 	
@@ -243,6 +245,7 @@ void gameplay()
 	drawFuelGauge();
 	drawObjects();
 	drawPlayer();
+  drawLowfuel();
 	drawLaser();
   drawScoreboard();
   
@@ -401,26 +404,32 @@ void updateFuelGauge()
 	{
 		fuelcount = 0;
 	}
-	
-	// Fuel Low Warning if needed
-	if(fuelcount > 30)
-	{
-		++fuelFrame;
-		if(fuelFrame < 1)
-		{
-			Sprites::drawExternalMask(player.x - 4, player.y + 6, lowfuel, lowfuelmask, 0, 0);
-		}
-		else
-		{
-			fuelFrame = 0;
-		}
-	}
-	
 	// GameOver if out of fuel
 	if(fuelcount > 40)
 	{
 		state = 3;
 	}
+}
+
+void updateLowfuelFrame()
+{
+    if(arduboy.everyXFrames(30)) // when running at 60fps
+  {
+    ++LowfuelFrame; // Add 1
+    if(LowfuelFrame > 1) { LowfuelFrame = 0; } // resets every .5 seconds
+  }
+}
+
+void drawLowfuel()
+{
+  // Fuel Low Warning if needed
+  if(fuelcount > 30)
+    {
+      if(LowfuelFrame < 1)
+      {
+        Sprites::drawExternalMask(player.x - 4, player.y + 6, lowfuel, lowfuelmask, 0, 0);
+      }
+    }
 }
 
 void loverushFlash()
@@ -454,7 +463,7 @@ void drawLaser(void)
 void handlePlayerHeartCollision(Object & heart)
 {
 	score = score + 5;
-	fuelcount = (fuelcount > 1) ? fuelcount - 1 : 0;
+	fuelcount = (fuelcount > 2) ? fuelcount - 2 : 0;
 	++heartcounter;
 	// check if you gain a shield
 	if(heartcounter >= 15)
@@ -474,7 +483,7 @@ void handlePlayerHeartCollision(Object & heart)
 void handlePlayerEnemyCollision(Object & enemy)
 {
     --shield;
-    fuelcount = fuelcount + 6;
+    fuelcount = fuelcount + 4;
     if ( fuelcount > 40 )
     {
       fuelcount = 40;
@@ -487,7 +496,7 @@ void handlePlayerEnemyCollision(Object & enemy)
 
 void handlePlayerFuelCollision(Object & fuel)
 {
-	fuelcount = (fuelcount > 16) ? fuelcount - 16 : 0;
+	fuelcount = (fuelcount > 20) ? fuelcount - 20 : 0;
 
 	resetFuel(fuel);
 
@@ -835,7 +844,7 @@ void drawObjects(void)
 void resetFuel(Object & fuel)
 {  
   // New power up at random interval between 30 and 60 seconds
-  powerUpCounter = random(20, 30);
+  powerUpCounter = random(10, 20);
   
   fuel.x = random(26, 87);
   fuel.y = -28;
@@ -844,7 +853,7 @@ void resetFuel(Object & fuel)
 void resetLoveBomb(Object & LoveBomb)
 {  
   // New power up at random interval between 30 and 60 seconds
-  powerUpCounter2 = random(30, 60);
+  powerUpCounter2 = random(30, 40);
   
   LoveBomb.x = random(26, 87);
   LoveBomb.y = -28;
