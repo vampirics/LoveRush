@@ -435,6 +435,8 @@ void drawLowfuel()
     }
 }
 
+bool loveRushLed = false;
+
 void loverushFlash()
 {
   if (loveTrigger)
@@ -443,6 +445,21 @@ void loverushFlash()
     {
       Sprites::drawExternalMask(49, 25, loverush, loverushmask, 0, 0);
     }
+  
+  if(arduboy.everyXFrames(6))
+  {
+    loveRushLed = !loveRushLed;
+    if(loveRushLed)
+    {
+      arduboy.digitalWriteRGB(RED_LED, RGB_ON);
+      arduboy.digitalWriteRGB(BLUE_LED, RGB_ON);    
+    }
+    else
+    {
+      arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
+      arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
+      }   
+  }
   }
 }
 
@@ -752,6 +769,8 @@ void updateLoveFrame()
       heartintoHeads(0);
       loveTrigger = false;
       loveFrame = 0;
+    arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
+    arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
     }
 }
 
