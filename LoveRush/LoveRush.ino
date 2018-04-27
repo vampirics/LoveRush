@@ -23,6 +23,7 @@ enum class ObjectType
 	Explosion,
 	Fuel,
 	LoveBomb,
+	LaserBullet,
 };
 
 class Object
@@ -56,7 +57,7 @@ bool operator ==(const Object & left, const Object & right)
 List<Object, 16> objects;
 
 Object player;
-bool handleLaser;
+List<Object, 4> laserBullets;
 bool loveTrigger = false;
 
 struct Position {
@@ -79,7 +80,7 @@ int8_t backdropy = 0;
 
 uint8_t heartFrame = 0;
 uint8_t fuelFrame = 0;
-uint8_t loveFrame = 0;
+uint16_t loveFrame = 0;
 uint8_t LowfuelFrame = 0;
 
 int8_t shield = 3;
@@ -236,6 +237,7 @@ void gameplay()
 	handleCollisions();
 	updateObjects();
 	updatePlayer();
+	updateLaserBullets();
   updateFuelGauge();	
   updateLoveFrame();
   updateLowfuelFrame();
@@ -246,8 +248,8 @@ void gameplay()
 	drawFuelGauge();
 	drawObjects();
 	drawPlayer();
+	drawLaserBullets();
   drawLowfuel();
-	drawLaser();
   drawScoreboard();
   
 	updateSpeed(oldScore);
@@ -296,12 +298,10 @@ void handleInput()
 	
 	if(arduboy.justPressed(A_BUTTON))
 	{
-		handleLaser = true;
-		sound.tone(NOTE_C5, 50, NOTE_C3, 100, NOTE_C2, 200);
-	}
-	else
-	{
-		handleLaser = false;
+		if(laserBullets.add(Object(player.x + 7, player.y - 2, ObjectType::LaserBullet)))
+		{
+			sound.tone(NOTE_C5, 50, NOTE_C3, 100, NOTE_C2, 200);
+		}
 	}
 	
 	if(arduboy.justPressed(B_BUTTON))
@@ -318,6 +318,47 @@ void updatePlayer()
 		++player.frame; // Add 1
 		player.frame %= 2; // Remainder of dividing by 2
 	}
+}
+
+void updateLaserBullet(Object & laserBullet)
+{
+	if(laserBullet.y > 12)
+	{
+		--laserBullet.y;
+	}
+	else
+	{
+		laserBullets.remove(laserBullet);
+	}
+  
+  // I don't know if there's an animation or not
+  
+  // if(arduboy.everyXFrames(30))
+  // {
+    // ++laserBullet.frame;
+    // laserBullet.frame %= 2;
+  // }
+}
+
+void updateLaserBullets()
+{	
+	for(uint8_t i = 0; i < laserBullets.getCount(); ++i)
+	{
+		if(laserBullets[i].y > 12)
+		{
+			--laserBullets[i].y;
+		}
+		else
+		{
+			laserBullets.removeAt(i);
+		}		
+	}
+}
+
+void drawLaserBullets(void)
+{
+	for(uint8_t i = 0; i < laserBullets.getCount(); ++i)
+		drawObject(laserBullets[i]);
 }
 
 void drawPlayer()
@@ -445,21 +486,21 @@ void loverushFlash()
     {
       Sprites::drawExternalMask(49, 25, loverush, loverushmask, 0, 0);
     }
-  
-  if(arduboy.everyXFrames(6))
-  {
-    loveRushLed = !loveRushLed;
-    if(loveRushLed)
-    {
-      arduboy.digitalWriteRGB(RED_LED, RGB_ON);
-      arduboy.digitalWriteRGB(BLUE_LED, RGB_ON);    
-    }
-    else
-    {
-      arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
-      arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
-      }   
-  }
+	
+	if(arduboy.everyXFrames(6))
+	{
+	  loveRushLed = !loveRushLed;
+	  if(loveRushLed)
+	  {
+	    arduboy.digitalWriteRGB(RED_LED, RGB_ON);
+	    arduboy.digitalWriteRGB(BLUE_LED, RGB_ON);	  
+	  }
+	  else
+	  {
+	    arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
+	    arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
+      }	  
+	}
   }
 }
 
@@ -468,16 +509,6 @@ void drawFuelGauge()
 	// display the fuel gauge
 	Sprites::drawExternalMask(119, 15, fuelgauge, fuelgaugemask, 0, 0);
 	arduboy.fillRect(121, 17, 3, fuelcount, BLACK);
-}
-
-void drawLaser(void)
-{
-	if(handleLaser)
-	{
-		arduboy.drawLine(player.x + 6, player.y - 1, player.x + 6, 10, WHITE);
-		arduboy.drawLine(player.x + 8, player.y - 1, player.x + 8, 10, WHITE);
-		arduboy.drawLine(player.x + 10, player.y - 1, player.x + 10, 10, WHITE);
-	}
 }
 
 void handlePlayerHeartCollision(Object & heart)
@@ -594,9 +625,9 @@ bool checkPlayerCollision(const Object & object)
 	return arduboy.collide(playerRect, objectRect);
 }
 
-bool checkLaserCollision(const Object & object)
+bool checkLaserCollision(const Object & object, const Object & laserBullet)
 {
-	Rect laserRect = { player.x + 8, player.y - 64, 2, 64 };
+	Rect laserRect = { laserBullet.x, laserBullet.y, 3, 6 };
 	Rect objectRect;
 	switch(object.type)
 	{
@@ -625,11 +656,13 @@ void handleCollisions()
 		}
 		
 		// collisions with the laser  
-		if(handleLaser)
+		for(uint8_t j = 0; j < laserBullets.getCount(); ++j)
 		{
-			if(checkLaserCollision(objects[i]))
+			if(checkLaserCollision(objects[i], laserBullets[j]))
 			{
 				handleLaserCollision(objects[i]);
+				laserBullets.removeAt(j);
+				break;
 			}
 		}
 	}
@@ -764,13 +797,13 @@ void updateLoveFrame()
     headintoHeart();
     ++loveFrame;
   }
-    if (loveFrame >= 240)
+    if (loveFrame >= 480)
     {
       heartintoHeads(0);
       loveTrigger = false;
       loveFrame = 0;
-    arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
-    arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
+	  arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
+	  arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
     }
 }
 
@@ -784,6 +817,7 @@ void updateObject(Object & object)
 		case ObjectType::Explosion: updateExplosion(object); break;
 		case ObjectType::Fuel: updateFuel(object); break;
 		case ObjectType::LoveBomb: updateLoveBomb(object); break;
+		case ObjectType::LaserBullet: updateLaserBullet(object); break;
 		default: break;
 	}
 }
@@ -846,6 +880,10 @@ void drawObject(const Object & object)
 		case ObjectType::LoveBomb:
 			image = lovepowerup;
 			mask = lovepowerupmask;
+			break;
+		case ObjectType::LaserBullet:
+			image = laserbullet;
+			mask = laserbulletmask;
 			break;
 		default: break;
 	}
