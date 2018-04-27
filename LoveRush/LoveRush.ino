@@ -369,7 +369,17 @@ void drawPlayer()
 void updateSpeed(uint16_t oldScore)
 {
 	// check if speed increase triggered
-	if(score >= 850 && oldScore < 850)
+	if(score >= 1500 && oldScore < 1500)
+  {
+    speed = 2;
+    handleSpeedUp();
+  }
+	else if(score >= 1150 && oldScore < 1150)
+  {
+    speed = 1;
+    handleSpeedUp();
+  }
+	else if(score >= 900 && oldScore < 900)
 	{
 		speed = 2;
 		handleSpeedUp();
