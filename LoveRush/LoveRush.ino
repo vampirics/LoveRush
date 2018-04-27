@@ -213,8 +213,8 @@ void loop()
   arduboy.pollButtons();
   arduboy.clear();
 
-  if (state == 0)  { vsboot(); }
-  else if (state == 1)  { Pharapboot(); }
+  if (state == 0)  { vsBoot(); }
+  else if (state == 1)  { pharapBoot(); }
   else if (state == 2)  { updateSplashState(); }
   else if (state == 3)  { gameplay(); }
   else if (state == 4)  { updateGameOverState(); }
@@ -242,14 +242,14 @@ void gameplay()
   updateLoveFrame();
   updateLowfuelFrame();
 
-  loverushFlash();
+  loveRushFlash();
 	
 	drawBackground();
 	drawFuelGauge();
 	drawObjects();
 	drawPlayer();
 	drawLaserBullets();
-  drawLowfuel();
+  drawLowFuel();
   drawScoreboard();
   
 	updateSpeed(oldScore);
@@ -324,7 +324,7 @@ void updateLaserBullet(Object & laserBullet)
 {
 	if(laserBullet.y > 12)
 	{
-		--laserBullet.y;
+		laserBullet.y -= 6;
 	}
 	else
 	{
@@ -346,7 +346,7 @@ void updateLaserBullets()
 	{
 		if(laserBullets[i].y > 12)
 		{
-			--laserBullets[i].y;
+			laserBullets[i].y -= 6;
 		}
 		else
 		{
@@ -464,7 +464,7 @@ void updateLowfuelFrame()
   }
 }
 
-void drawLowfuel()
+void drawLowFuel()
 {
   // Fuel Low Warning if needed
   if(fuelcount > 30)
@@ -478,7 +478,7 @@ void drawLowfuel()
 
 bool loveRushLed = false;
 
-void loverushFlash()
+void loveRushFlash()
 {
   if (loveTrigger)
   {
@@ -794,12 +794,12 @@ void updateLoveFrame()
 {
   if(loveTrigger)
   {
-    headintoHeart();
+    headIntoHeart();
     ++loveFrame;
   }
     if (loveFrame >= 480)
     {
-      heartintoHeads(0);
+      heartIntoHeads(0);
       loveTrigger = false;
       loveFrame = 0;
 	  arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
@@ -828,7 +828,7 @@ void updateObjects(void)
     updateObject(objects[i]);
 }
 
-void headintoHeart() //check if the object is an enemy and turns it into a heart
+void headIntoHeart() //check if the object is an enemy and turns it into a heart
 {
   for(uint8_t i = 0; i < objects.getCount(); ++i)
   {
@@ -839,7 +839,7 @@ void headintoHeart() //check if the object is an enemy and turns it into a heart
   }
 }
 
-void heartintoHeads(uint8_t enemyCount) //check if the object is aheart and turns it into a head
+void heartIntoHeads(uint8_t enemyCount) //check if the object is aheart and turns it into a head
 {
   for(uint8_t i = 0; i < objects.getCount(); ++i)
   {
@@ -919,7 +919,7 @@ void resetLoveBomb(Object & LoveBomb)
   LoveBomb.y = -28;
 }
 
-void vsboot()
+void vsBoot()
 {
   // Vsoft logo display
   arduboy.drawBitmap(0, 0, bootlogo, 128, 64, WHITE);
@@ -931,7 +931,7 @@ void vsboot()
   }
 }
 
-void Pharapboot()
+void pharapBoot()
 {
   // Pharap image display
     sprite.drawExternalMask(52, 8, Pharap, Pharapmask, 0, 0);
