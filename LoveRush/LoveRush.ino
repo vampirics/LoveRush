@@ -82,6 +82,7 @@ uint8_t heartFrame = 0;
 uint8_t fuelFrame = 0;
 uint16_t loveFrame = 0;
 uint8_t LowfuelFrame = 0;
+uint8_t delayFrame = 0;
 
 int8_t shield = 3;
 bool primed = false;
@@ -265,7 +266,7 @@ void resetGame()
   powerUpCounter = random(10, 20);
   powerUpCounter2 = random(10, 20);
   
-  player = Object(54, 40, ObjectType::Player);
+  player = Object(54, 50, ObjectType::Player);
   
   objects.clear();
   objects.add(Object(random(26, 87), -28, ObjectType::Heart));
@@ -772,7 +773,7 @@ void updateFuel(Object & fuel)
 		}
 	}
 	
-	if(arduboy.everyXFrames(30)) // when running at 60fps
+	if(arduboy.everyXFrames(10)) // when running at 60fps
 	{
 		++fuel.frame;
 		fuel.frame %= 2;
@@ -793,7 +794,7 @@ void updateLoveBomb(Object & LoveBomb)
     }
   }
   
-  if(arduboy.everyXFrames(30)) // when running at 60fps
+  if(arduboy.everyXFrames(10)) // when running at 60fps
   {
     ++LoveBomb.frame;
     LoveBomb.frame %= 2;
