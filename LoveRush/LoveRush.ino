@@ -71,6 +71,7 @@ Position cloudr = { 103, 0 };
 const uint8_t FPS = 60;
 uint8_t powerUpCounter = 0;
 uint8_t powerUpCounter2 = 0;
+uint8_t selection = 0;
 
 uint8_t state = 0;
 
@@ -220,8 +221,63 @@ void loop()
   else if (state == 3)  { gameplay(); }
   else if (state == 4)  { updateGameOverState(); }
   else if (state == 5)  { updatePauseState(); }
+  else if (state == 6)  { updateHighscoreScreen(); }
   
   arduboy.display();
+}
+
+void updateHighscoreScreen()
+{
+  // Only need 5 for a uint16_t
+  uint8_t digits[5];
+  
+  drawBackground2();
+  arduboy.fillRect(0, 16, 128, 31, BLACK);
+  arduboy.drawLine(0, 17, 128, 17, WHITE);
+  arduboy.drawLine(0, 45, 128, 45, WHITE);
+  arduboy.drawLine(0, 48, 128, 48, BLACK);
+  arduboy.drawLine(0, 50, 128, 50, BLACK);
+
+    // Reset highScore value option
+  if(!primed)
+  {
+    if (arduboy.justPressed(B_BUTTON))
+    {
+      primed = true;
+    }
+  }
+  else
+  {
+    if (arduboy.justPressed(DOWN_BUTTON))
+    {
+      highScore = 0;
+      EEPROM.put(EEPROM_SCORE, highScore);
+      primed = false;
+      sound.tone(NOTE_E5,50, NOTE_E6,50, NOTE_E7,50);
+    }
+    else if (arduboy.justPressed(B_BUTTON))
+    {
+      primed = false;
+    }
+    // Display a warning
+    arduboy.setCursor(16, 54);
+    arduboy.print(F("DOWN:DEL."));
+    arduboy.setCursor(66, 54);
+    arduboy.print(F("B:CANCEL"));
+  }
+  
+  arduboy.setCursor(15, 28);
+  arduboy.print(F("HIGH SCORE:"));
+  arduboy.setCursor(81, 28);
+  extractDigits(digits, highScore);
+  for(uint8_t i = 5; i > 0; --i)
+  arduboy.print(digits[i - 1]);
+  
+  // If 'A' button is pressed move to splash
+  if (arduboy.justPressed(A_BUTTON))
+  {
+    state = 2;
+  }
 }
 
 void gameplay()
@@ -805,16 +861,16 @@ void updateLoveFrame()
 {
   if(loveTrigger)
   {
-    headIntoHeart();
+    transformObjects(ObjectType::Enemy, ObjectType::Heart, 2);
     ++loveFrame;
   }
     if (loveFrame >= 480)
     {
-      heartIntoHeads(0);
+      transformObjects(ObjectType::Heart, ObjectType::Enemy, 2);
       loveTrigger = false;
       loveFrame = 0;
-	  arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
-	  arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
+	    arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
+	    arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
     }
 }
 
@@ -839,25 +895,20 @@ void updateObjects(void)
     updateObject(objects[i]);
 }
 
-void headIntoHeart() //check if the object is an enemy and turns it into a heart
+void transformObjects(ObjectType fromType, ObjectType toType, uint8_t limit)
 {
+  uint8_t counter = 0;
   for(uint8_t i = 0; i < objects.getCount(); ++i)
   {
-    if(objects[i].type == ObjectType::Enemy)
+    if(objects[i].type == fromType)
     {
-      objects[i].type = ObjectType::Heart;
-    }
-  }
-}
-
-void heartIntoHeads(uint8_t enemyCount) //check if the object is aheart and turns it into a head
-{
-  for(uint8_t i = 0; i < objects.getCount(); ++i)
-  {
-    if(objects[i].type == ObjectType::Heart && enemyCount < 2)
-    {
-      objects[i].type = ObjectType::Enemy;
-      ++enemyCount;
+      objects[i].type = toType;
+      ++counter;
+      
+      if(counter >= limit)
+      {
+        break;
+      }
     }
   }
 }
@@ -1057,34 +1108,6 @@ void updatePauseState()
 
 void updateSplashState()
 {
-	// Reset highScore value option
-	if(!primed)
-	{
-		if (arduboy.justPressed(B_BUTTON))
-		{
-			primed = true;
-		}
-	}
-	else
-	{
-		if (arduboy.justPressed(DOWN_BUTTON))
-		{
-			highScore = 0;
-			EEPROM.put(EEPROM_SCORE, highScore);
-			primed = false;
-			sound.tone(NOTE_E5,50, NOTE_E6,50, NOTE_E7,50);
-		}
-		else if (arduboy.justPressed(B_BUTTON))
-		{
-			primed = false;
-		}
-		// Display a warning
-		arduboy.setCursor(16, 1);
-		arduboy.print(F("DOWN:DEL."));
-		arduboy.setCursor(66, 1);
-		arduboy.print(F("B:CANCEL"));
-	}
-
 	if(arduboy.everyXFrames(15)) // when running at 60fps
 	{
 		++heartFrame; // Add 1
@@ -1094,9 +1117,18 @@ void updateSplashState()
 		}
 	}
 	
-	Sprites::drawExternalMask(23, 31, heart, heartmask, heartFrame, heartFrame);
-	Sprites::drawExternalMask(89, 31, heart, heartmask, heartFrame, heartFrame);
+	Sprites::drawExternalMask(23, 27, heart, heartmask, heartFrame, heartFrame);
+	Sprites::drawExternalMask(89, 27, heart, heartmask, heartFrame, heartFrame);
 	arduboy.drawBitmap(0, 0, splash, 128, 64, WHITE);
+  if (selection < 1 )
+  {
+    arduboy.drawBitmap(39, 47, startselected, 50, 14, WHITE);
+  }
+  else
+  {
+    arduboy.drawBitmap(39, 47, highscoreselected, 50, 14, WHITE);
+  }
+ 
 	fadeIn();
 
 	// If 'A' button is pressed move to gameplay
@@ -1104,9 +1136,27 @@ void updateSplashState()
 	{
 		arduboy.initRandomSeed();
 		resetGame();
-		state = 3; 
+    sound.tone(NOTE_C5,50, NOTE_D4,50, NOTE_E3,50);
+		if (selection < 1)
+		{
+		  state = 3; 
+		}
+   else
+   {
+    state = 6;
+   }
 		resetFadeIn();
 	}
+ if (arduboy.justPressed(UP_BUTTON)&& selection > 0)
+ {
+  sound.tone(NOTE_E5,50, NOTE_E2,50, NOTE_E3,50);
+  --selection;
+ }
+  if (arduboy.justPressed(DOWN_BUTTON)&& selection < 1)
+ {
+  sound.tone(NOTE_E5,50, NOTE_E2,50, NOTE_E3,50);
+  ++selection;
+ }
 
 }
 
@@ -1116,6 +1166,7 @@ void turnLightsOff()
   arduboy.digitalWriteRGB(GREEN_LED, RGB_OFF); // turn off LEDS
   arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF); // turn off LEDS
 }
+
 
 // Gameover state
 void updateGameOverState()
@@ -1156,7 +1207,7 @@ void updateGameOverState()
 
 	sprite.drawExternalMask(46, 52, pressb, pressbmask, 0, 0);
 
-	// If 'A' button is pressed move to splash
+	// If 'B' button is pressed move to splash
 	if (arduboy.justPressed(B_BUTTON))
 	{
 		state = 2;
