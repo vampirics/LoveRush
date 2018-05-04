@@ -97,6 +97,7 @@ uint16_t ledTimerb = 0;
 uint16_t flashtimer = 0;
 
 int8_t heartcounter = 0;
+uint8_t blinkCounter = 0;
 
 uint8_t fadeWidth;
 
@@ -1002,16 +1003,16 @@ void pharapBoot()
     if(arduboy.everyXFrames(120)) // when running at 60fps
     {
       sprite.drawExternalMask(52, 8, Pharap, Pharapmask, 1, 0);
-    }
-      if(fadeIn())
+      ++blinkCounter;
+      if (blinkCounter >= 3)
       {
-        if (arduboy.justPressed(A_BUTTON))
-        {
-          resetFade();
-          resetFadeIn();
-          state = 2;
-        }
+        resetFade();
+        resetFadeIn();
+        state = 2;
+        blinkCounter = 0;
+      }
     }
+      fadeIn();
 }
 
   // scrolling background1 function
