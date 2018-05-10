@@ -96,8 +96,12 @@ uint16_t ledTimerg = 0;
 uint16_t ledTimerb = 0;
 uint16_t flashtimer = 0;
 
+uint8_t introDelay = 0;
+
 int8_t heartcounter = 0;
 uint8_t blinkCounter = 0;
+
+uint8_t ee1 = 0;
 
 uint8_t fadeWidth;
 
@@ -223,6 +227,7 @@ void loop()
   else if (state == 4)  { updateGameOverState(); }
   else if (state == 5)  { updatePauseState(); }
   else if (state == 6)  { updateHighscoreScreen(); }
+  else if (state == 7)  { ee1Ascreen(); }
   
   arduboy.display();
 }
@@ -242,7 +247,7 @@ void updateHighscoreScreen()
     // Reset highScore value option
   if(!primed)
   {
-    if (arduboy.justPressed(B_BUTTON))
+    if (arduboy.justPressed(A_BUTTON))
     {
       primed = true;
     }
@@ -256,15 +261,15 @@ void updateHighscoreScreen()
       primed = false;
       sound.tone(NOTE_E5,50, NOTE_E6,50, NOTE_E7,50);
     }
-    else if (arduboy.justPressed(B_BUTTON))
+    else if (arduboy.justPressed(A_BUTTON))
     {
       primed = false;
     }
     // Display a warning
-    arduboy.setCursor(16, 54);
-    arduboy.print(F("DOWN:DEL."));
-    arduboy.setCursor(66, 54);
-    arduboy.print(F("B:CANCEL"));
+    arduboy.setCursor(0, 53);
+    arduboy.print(F("  DOWN:DEL."));
+    arduboy.setCursor(66, 53);
+    arduboy.print(F(" A:CANCEL   "));
   }
   
   arduboy.setCursor(15, 28);
@@ -273,13 +278,65 @@ void updateHighscoreScreen()
   extractDigits(digits, highScore);
   for(uint8_t i = 5; i > 0; --i)
   arduboy.print(digits[i - 1]);
+
+  if (arduboy.justPressed(UP_BUTTON) && arduboy.justPressed(DOWN_BUTTON))
+  {
+    sound.tone(NOTE_C4,50, NOTE_B3,100, NOTE_C5,50);
+    state = 7;
+  }
   
   // If 'A' button is pressed move to splash
-  if (arduboy.justPressed(A_BUTTON))
+  if (arduboy.justPressed(B_BUTTON))
   {
     state = 2;
   }
 }
+
+void ee1Ascreen()
+{
+    objects.add(Object(random(26, 87), random(-64, -14), ObjectType::Heart));
+    transformObjects(ObjectType::Enemy, ObjectType::Heart, 2);
+    updateObjects();
+    drawBackground2();
+    drawObjects();
+    
+    arduboy.fillRect(0, 23, 128, 15, BLACK);
+    arduboy.drawLine(0, 24, 128, 24, WHITE);
+    arduboy.drawLine(0, 36, 128, 36, WHITE);
+    arduboy.drawLine(0, 39, 128, 39, BLACK);
+    arduboy.drawLine(0, 41, 128, 41, BLACK);
+    arduboy.setCursor(-2, 27);
+    arduboy.print(F(" J&S FOREVER 09.03.16 "));
+
+    if (arduboy.pressed(A_BUTTON))
+    {
+      arduboy.fillRect(0, 23, 128, 15, BLACK);
+      arduboy.drawLine(0, 24, 128, 24, WHITE);
+      arduboy.drawLine(0, 36, 128, 36, WHITE);
+      arduboy.drawLine(0, 39, 128, 39, BLACK);
+      arduboy.drawLine(0, 41, 128, 41, BLACK);
+      arduboy.setCursor(8, 27);
+      arduboy.print(F("I LOVE YOU JESSICA!"));
+    }
+    if(arduboy.everyXFrames(15))
+    {
+      arduboy.digitalWriteRGB(RED_LED, RGB_ON);
+      arduboy.digitalWriteRGB(BLUE_LED, RGB_ON);    
+    }
+    else
+    {
+      arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
+      arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
+    }   
+
+    if (arduboy.justPressed(B_BUTTON))
+    {
+      arduboy.digitalWriteRGB(RED_LED, RGB_OFF);
+      arduboy.digitalWriteRGB(BLUE_LED, RGB_OFF);
+      state = 6;
+    }
+}
+
 
 void gameplay()
 {
@@ -326,7 +383,7 @@ void resetGame()
   player = Object(54, 50, ObjectType::Player);
   
   objects.clear();
-  objects.add(Object(random(26, 87), -28, ObjectType::Heart));
+  objects.add(Object(random(26, 87), random(-64, -14), ObjectType::Heart));
   //objects.add(Object(random(26, 87), -28, ObjectType::Heart));
   objects.add(Object(random(26, 87), -28, ObjectType::Enemy));
   objects.add(Object(random(26, 87), -28, ObjectType::Enemy));
@@ -593,7 +650,7 @@ void handlePlayerHeartCollision(Object & heart)
 		heartcounter = 0;
 	}
 	
-	heart.y = -14;
+	heart.y = random(-64, -14);
 	heart.x = random(26, 87);
 	
 	sound.tone(NOTE_E3, 80, NOTE_E4, 80, NOTE_E5, 80);
@@ -771,7 +828,7 @@ void updateHeart(Object & heart)
 	heart.y = heart.y + speed + 1;
 	if( heart.y > 64 )
 	{
-		heart.y = -28;
+		heart.y = random(-64, -14);
 		heart.x = random(26, 87);
 	}
 	
@@ -787,7 +844,7 @@ void updateDamagedHeart(Object & heart)
 	--heart.y;
 	if( heart.y < -28 )
 	{
-		heart.y = -28;
+		heart.y = random(-64, -14);
 		heart.x = random(26, 87);
 		heart.type = ObjectType::Heart;
 		heart.frame = 0;
@@ -985,14 +1042,15 @@ void resetLoveBomb(Object & LoveBomb)
 void vsBoot()
 {
   // Vsoft logo display
-  arduboy.drawBitmap(0, 0, bootlogo, 128, 64, WHITE);
-  if(fadeOut())
-  {
-    resetFade();
-    resetFadeIn();
-    state = 1;
-  }
+    arduboy.drawBitmap(0, 0, bootlogo, 128, 64, WHITE);
+    if(fadeOut())
+    {
+      resetFade();
+      resetFadeIn();
+      state = 1;
+    }
 }
+
 
 void pharapBoot()
 {
@@ -1011,7 +1069,12 @@ void pharapBoot()
         state = 2;
         blinkCounter = 0;
       }
+      
     }
+      if (arduboy.justPressed(A_BUTTON))
+      {
+        state = 2;
+      }
       fadeIn();
 }
 
