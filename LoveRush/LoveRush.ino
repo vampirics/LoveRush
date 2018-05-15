@@ -1186,11 +1186,11 @@ void updateSplashState()
 	arduboy.drawBitmap(0, 0, splash, 128, 64, WHITE);
   if (selection < 1 )
   {
-    arduboy.drawBitmap(39, 47, startselected, 50, 14, WHITE);
+    arduboy.drawBitmap(38, 47, startselected, 52, 14, WHITE);
   }
   else
   {
-    arduboy.drawBitmap(39, 47, highscoreselected, 50, 14, WHITE);
+    arduboy.drawBitmap(38, 47, highscoreselected, 52, 14, WHITE);
   }
  
 	fadeIn();
