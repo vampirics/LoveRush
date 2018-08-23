@@ -19,3 +19,13 @@ Game Features:
 - A collision with an angry face is -1 shield (you have 4 shields at the start total)
 - A collision with an angry face also makes you lose some precious fuel.
 - Fuel Powerup added (more powerups to come in the future)
+
+## Licences
+
+The source code is available under the MIT licence.
+The code licence file is `LICENSE`.
+
+The graphics are available under the CC BY-NC-SA 4.0 licence.
+The art licence file is `images/BY-NC-SA.txt`
+
+![Licence Logo](https://mirrors.creativecommons.org/presskit/buttons/80x15/png/by-nc-sa.png)
